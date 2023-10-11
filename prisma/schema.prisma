@@ -1,0 +1,238 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  userId              String             @id @default(uuid())
+  email               String             @unique
+  password            String
+  // 
+  userProfileId       String?            @unique
+  userProfile         UserProfile?       @relation(fields: [userProfileId], references: [userProfileId])
+  adminProfileId      String?            @unique
+  adminProfile        AdminProfile?      @relation(fields: [adminProfileId], references: [adminProfileId])
+  superAdminProfileId String?            @unique
+  superAdminProfile   SuperAdminProfile? @relation(fields: [superAdminProfileId], references: [superAdminProfileId])
+  doctorProfileId     String?            @unique
+  doctorProfile       DoctorProfile?     @relation(fields: [doctorProfileId], references: [doctorProfileId])
+
+  @@map("users")
+}
+
+model UserProfile {
+  userProfileId    String             @id @default(uuid())
+  name             String
+  role             userRole
+  contactNo        String
+  address          String
+  profileImg       String
+  coverPhoto       String?
+  bloodGroup       String?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  user             User?
+  reviewAndRatings ReviewAndRatings[]
+
+  @@map("user_profiles")
+}
+
+model AdminProfile {
+  adminProfileId String    @id @default(uuid())
+  fullName       String
+  email          String    @unique
+  phoneNumber    String
+  role           userRole
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  user           User?
+  blogs          Blog[]
+  products       Product[]
+  services       Service[]
+
+  @@map("admin_profiles")
+}
+
+model SuperAdminProfile {
+  superAdminProfileId String   @id @default(uuid())
+  fullName            String
+  email               String   @unique
+  phoneNumber         String
+  role                userRole
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  user                User?
+
+  @@map("super_admin_profiles")
+}
+
+model DoctorProfile {
+  doctorProfileId  String            @id @default(uuid())
+  fullName         String
+  email            String            @unique
+  phoneNumber      String            @unique
+  role             userRole
+  qualification    String
+  specializationId String
+  specialization   Specialization    @relation(fields: [specializationId], references: [id])
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  availabilities   AvailableDoctor[]
+  user             User?
+
+  @@map("doctor_profiles")
+}
+
+model Service {
+  serviceId      String        @id @default(uuid())
+  serviceName    String        @unique
+  description    String?
+  serviceImage   String
+  serviceStatus  serviceStatus @default(available)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  // 
+  categoryId     String
+  category       Category      @relation(fields: [categoryId], references: [categoryId])
+  adminProfileId String
+  adminProfile   AdminProfile  @relation(fields: [adminProfileId], references: [adminProfileId])
+  appointments   Appointment[]
+  products       Product[]
+
+  @@map("services")
+}
+
+model Category {
+  categoryId    String    @id @default(uuid())
+  categoryName  String    @unique
+  description   String?
+  categoryImage String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  // relations
+  services      Service[]
+
+  @@map("categories")
+}
+
+model ReviewAndRatings {
+  reviewId      String      @id @default(uuid())
+  reviewComment String
+  reviewRating  String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  // relations
+  userProfileId String
+  userProfile   UserProfile @relation(fields: [userProfileId], references: [userProfileId])
+
+  @@map("reviews_and_ratings")
+}
+
+model Blog {
+  blogId          String       @id @default(uuid())
+  blogTitle       String
+  blogDescription String
+  blogImage       String
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  // relations
+  adminProfileId  String
+  adminProfile    AdminProfile @relation(fields: [adminProfileId], references: [adminProfileId])
+
+  @@map("blogs")
+}
+
+model Product {
+  productId          String       @id @default(uuid())
+  productTitle       String
+  productDescription String
+  productImage       String
+  productPrice       String
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+  // relations
+  adminProfileId     String
+  adminProfile       AdminProfile @relation(fields: [adminProfileId], references: [adminProfileId])
+  // 
+  serviceId          String
+  service            Service      @relation(fields: [serviceId], references: [serviceId])
+
+  @@map("products")
+}
+
+model Specialization {
+  id          String          @id @default(uuid())
+  name        String          @unique
+  description String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  doctors     DoctorProfile[]
+
+  @@map("specializations")
+}
+
+model Appointment {
+  appointmentId     String            @id @default(uuid())
+  appointmentDate   DateTime
+  appointmentStatus appointmentStatus @default(pending)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  // 
+  serviceId         String
+  service           Service           @relation(fields: [serviceId], references: [serviceId])
+  // 
+  slotId            String
+  slot              TimeSlot          @relation(fields: [slotId], references: [slotId])
+
+  @@map("appointments")
+}
+
+model TimeSlot {
+  slotId       String        @id @default(uuid())
+  startTime    DateTime
+  endTime      DateTime
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  // 
+  appointments Appointment[]
+
+  @@map("time_slots")
+}
+
+model AvailableDoctor {
+  id                           String         @id @default(uuid())
+  availableDate                DateTime       @map("available_date")
+  createdAt                    DateTime       @default(now())
+  updatedAt                    DateTime       @updatedAt
+  // 
+  slotId                       String         @map("slot_id")
+  // 
+  DoctorProfile                DoctorProfile? @relation(fields: [doctorProfileDoctorProfileId], references: [doctorProfileId])
+  doctorProfileDoctorProfileId String?
+
+  @@map("available_doctors")
+}
+
+enum userRole {
+  user
+  admin
+  super_admin
+}
+
+enum appointmentStatus {
+  pending
+  approved
+  rejected
+}
+
+enum serviceStatus {
+  available
+  upcoming
+}
