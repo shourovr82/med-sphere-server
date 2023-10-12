@@ -14,7 +14,7 @@ import {
 
 import { IPaginationOptions } from '../../../interfaces/pagination';
 import { IGenericResponse } from '../../../interfaces/common';
-import { Blog, Prisma, Service } from '@prisma/client';
+import { Prisma, Service } from '@prisma/client';
 import { paginationHelpers } from '../../../helpers/paginationHelper';
 import {
   serviceRelationalFields,
@@ -31,7 +31,7 @@ const createNewService = async (
   const uploadedImage = await FileUploadHelper.uploadImageToCloudinary(file);
 
   if (uploadedImage) {
-    req.body.blogImage = uploadedImage.secure_url;
+    req.body.serviceImage = uploadedImage.secure_url;
   }
   const data = req.body as IServiceCreateRequest;
 
@@ -151,19 +151,23 @@ const getAllServices = async (
   };
 };
 
-const getSingleService = async (blogId: string): Promise<Blog | null> => {
+const getSingleService = async (serviceId: string): Promise<Service | null> => {
   //
 
-  const result = await prisma.blog.findUnique({
+  const result = await prisma.service.findUnique({
     where: {
-      blogId,
+      serviceId,
     },
     include: {
-      profile: true,
+      appointmentBooked: true,
+      category: true,
+      products: true,
+      reviewAndRatings: true,
+      feedBackForms: true,
     },
   });
   if (!result) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Blog Not Found !!!');
+    throw new ApiError(httpStatus.NOT_FOUND, 'Service Not Found !!!');
   }
   return result;
 };

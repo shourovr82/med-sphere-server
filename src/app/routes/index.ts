@@ -6,6 +6,8 @@ import { SlotRoutes } from '../modules/slots/slots.routes';
 import { BlogRoutes } from '../modules/blogs/blogs.routes';
 import { SpecializationRoutes } from '../modules/specializations/specialization.routes';
 import { MedServiceRoutes } from '../modules/services/service.routes';
+import { CategoryRoutes } from '../modules/category/category.routes';
+import { ReviewAndRatingRoutes } from '../modules/reviewAndRatings/reviewAndRating.routes';
 // import { AuthRoutes } from '../modules/auth/auth.routes';
 
 const router = express.Router();
@@ -34,6 +36,14 @@ const moduleRoutes = [
   {
     path: '/services',
     route: MedServiceRoutes,
+  },
+  {
+    path: '/categories',
+    route: CategoryRoutes,
+  },
+  {
+    path: '/review-ratings',
+    route: ReviewAndRatingRoutes,
   },
 ];
 
