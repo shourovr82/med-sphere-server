@@ -21,22 +21,11 @@ const storage = multer.diskStorage({
     cb(null, file.originalname);
   },
 });
-const storageForTackPack = multer.diskStorage({
-  destination: function (req, file, callback) {
-    callback(null, 'uploads/tackpack');
-  },
-  filename: function (req, file, cb) {
-    cb(null, file.originalname);
-  },
-});
 
 // upload middleware with fileValidator
 const upload = multer({ storage: storage });
 
-const uploadProfileImage = multer({ storage: storage });
-const uploadTackPackPdf = multer({ storage: storageForTackPack });
-
-const uploadStyleImageToCloudinary = async (
+const uploadImageToCloudinary = async (
   file: IUploadFile
 ): Promise<ICloudinaryResponse> => {
   return new Promise((resolve, reject) => {
@@ -46,58 +35,7 @@ const uploadStyleImageToCloudinary = async (
       cloudinary.uploader.upload(
         file.path,
         {
-          folder: 'styles',
-        },
-        (error: any, result: any) => {
-          fs.unlinkSync(file.path);
-          if (error) {
-            reject(error);
-          } else {
-            resolve(result);
-          }
-        }
-      );
-    }
-  });
-};
-const uploadUserImageToCloudinary = async (
-  file: IUploadFile
-): Promise<ICloudinaryResponse> => {
-  return new Promise((resolve, reject) => {
-    if (file === undefined) {
-      reject(new ApiError(httpStatus.BAD_REQUEST, 'Image is required !!'));
-    } else if (file) {
-      cloudinary.uploader.upload(
-        file.path,
-        {
-          resource_type: 'auto',
-          folder: 'users',
-        },
-        (error: any, result: any) => {
-          fs.unlinkSync(file.path);
-          if (error) {
-            reject(error);
-          } else {
-            resolve(result);
-          }
-        }
-      );
-    }
-  });
-};
-const uploadTackPackPdfToCloudinary = async (
-  file: IUploadFile
-): Promise<ICloudinaryResponse> => {
-  return new Promise((resolve, reject) => {
-    if (file === undefined) {
-      reject(
-        new ApiError(httpStatus.BAD_REQUEST, 'tack pack pdf is required !!')
-      );
-    } else if (file) {
-      cloudinary.uploader.upload(
-        file.path,
-        {
-          folder: 'tackpack',
+          folder: 'med-sphere',
         },
         (error: any, result: any) => {
           fs.unlinkSync(file.path);
@@ -113,10 +51,6 @@ const uploadTackPackPdfToCloudinary = async (
 };
 
 export const FileUploadHelper = {
-  uploadStyleImageToCloudinary,
-  uploadUserImageToCloudinary,
+  uploadImageToCloudinary,
   upload,
-  uploadProfileImage,
-  uploadTackPackPdfToCloudinary,
-  uploadTackPackPdf,
 };

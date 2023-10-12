@@ -118,8 +118,8 @@ model Blog {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   // 
-  profilId        String
-  profile         Profile  @relation(fields: [profilId], references: [profileId])
+  profileId       String
+  profile         Profile  @relation(fields: [profileId], references: [profileId])
 
   // relations
   @@map("blogs")

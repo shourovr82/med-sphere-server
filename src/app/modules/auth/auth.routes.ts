@@ -9,7 +9,7 @@ const router = express.Router();
 
 router.post(
   '/create-user',
-  FileUploadHelper.uploadProfileImage.single('file'),
+  FileUploadHelper.upload.single('file'),
   (req: Request, res: Response, next: NextFunction) => {
     req.body = UserValidation.createUser.parse(JSON.parse(req.body.data));
     return AuthController.createNewUser(req, res, next);

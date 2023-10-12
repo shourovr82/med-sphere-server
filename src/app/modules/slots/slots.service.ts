@@ -3,9 +3,13 @@
 import prisma from '../../../shared/prisma';
 import ApiError from '../../../errors/ApiError';
 import httpStatus from 'http-status';
+import { TimeSlot } from '@prisma/client';
+import { ICreateSlotReq, ICreateSlotResponse } from './slots.interface';
 
 // ! user create
-const createNewSlot = async (payload: any) => {
+const createNewSlot = async (
+  payload: ICreateSlotReq
+): Promise<ICreateSlotResponse> => {
   //
   const existingSlot = await prisma.timeSlot.findFirst({
     where: {
@@ -36,6 +40,14 @@ const createNewSlot = async (payload: any) => {
   return createdNewSlot;
 };
 
+const getAllSlots = async (): Promise<TimeSlot[]> => {
+  //
+  const allSlots = await prisma.timeSlot.findMany({});
+
+  return allSlots;
+};
+
 export const SlotService = {
   createNewSlot,
+  getAllSlots,
 };

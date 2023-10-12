@@ -22,9 +22,7 @@ import { userRole } from '@prisma/client';
 const createNewUser = async (req: Request) => {
   const file = req.file as IUploadFile;
 
-  const uploadedImage = await FileUploadHelper.uploadUserImageToCloudinary(
-    file
-  );
+  const uploadedImage = await FileUploadHelper.uploadImageToCloudinary(file);
 
   if (uploadedImage) {
     req.body.profileImage = uploadedImage.secure_url;

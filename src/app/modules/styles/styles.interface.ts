@@ -1,13 +1,6 @@
-import { Factory } from '@prisma/client';
-
-export type IStylesFilterRequest = {
+export type IBlogFilterRequest = {
   searchTerm?: string | undefined;
-  factoryId?: string | undefined;
-  styleNo?: string | undefined;
   profileId?: string | undefined;
-  itemId?: string | undefined;
-  startDate?: string | null; // Date range start
-  endDate?: string | null;
 };
 export type IStyleCreateRequest = {
   styleNo: string;
@@ -25,10 +18,7 @@ export type IUpdateStyleRequest = {
 export type IGetAllStyleNo = {
   styleNo: string;
 };
-export type IAssignedStyleResponse = {
-  factory: Factory | null;
-  styleNo: string;
-};
+
 export type IFactoryAssignToStyleResponse = {
   styleNo: string;
   factoryId: string;
