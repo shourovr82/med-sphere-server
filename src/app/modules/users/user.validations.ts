@@ -19,6 +19,16 @@ const createUser = z.object({
     required_error: 'password is required',
     invalid_type_error: 'password must be in string',
   }),
+  qualification: z
+    .string({
+      invalid_type_error: 'Qualification must be in string',
+    })
+    .optional(),
+  specializationId: z
+    .string({
+      invalid_type_error: 'Specialization Id must be in string',
+    })
+    .optional(),
   role: z
     .enum([...ZodUserRoles] as [string, ...string[]], {
       required_error: 'Role is Required',

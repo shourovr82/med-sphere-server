@@ -1,0 +1,130 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Prisma, Specialization } from '@prisma/client';
+import { Request } from 'express';
+import httpStatus from 'http-status';
+import ApiError from '../../../errors/ApiError';
+import { paginationHelpers } from '../../../helpers/paginationHelper';
+import { IGenericResponse } from '../../../interfaces/common';
+import { IPaginationOptions } from '../../../interfaces/pagination';
+import prisma from '../../../shared/prisma';
+import {
+  specializationFields,
+  specializationRelationalFieldsMapper,
+  specializationSearchableFields,
+} from './specialization.constants';
+import {
+  ISpecializationFilterRequest,
+  ISpecializationRequest,
+} from './specialization.interface';
+
+// modules
+
+const createSpecialization = async (
+  profileId: string,
+  req: Request
+): Promise<Specialization> => {
+ 
+  const data = req.body as ISpecializationRequest;
+
+  console.log("data",data);
+
+  const result = await prisma.$transaction(async transactionClient => {
+
+    const newSpecializationData = {
+      specializationName: data.specializationName,
+      description: data.description,
+    };
+
+    const createdSpecialization = await transactionClient.specialization.create({
+      data: newSpecializationData,
+    });
+    return createdSpecialization;
+  });
+
+  if (!result) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Specialization creation failed');
+  }
+  return result;
+};
+
+
+
+const getAllSpecialization = async (
+  filters: ISpecializationFilterRequest,
+  options: IPaginationOptions
+): Promise<IGenericResponse<Specialization[]>> => {
+  const { limit, page, skip } = paginationHelpers.calculatePagination(options);
+
+  const { searchTerm, ...filterData } = filters;
+
+  const andConditions = [];
+
+  if (searchTerm) {
+    andConditions.push({
+      OR: specializationSearchableFields.map((field: any) => ({
+        [field]: {
+          contains: searchTerm,
+          mode: 'insensitive',
+        },
+      })),
+    });
+  }
+
+  if (Object.keys(filterData).length > 0) {
+    andConditions.push({
+      AND: Object.keys(filterData).map(key => {
+        if (specializationFields.includes(key)) {
+          return {
+            [specializationRelationalFieldsMapper[key]]: {
+              id: (filterData as any)[key],
+            },
+          };
+        } else {
+          return {
+            [key]: {
+              equals: (filterData as any)[key],
+            },
+          };
+        }
+      }),
+    });
+  }
+
+  const whereConditions: Prisma.SpecializationWhereInput =
+    andConditions.length > 0 ? { AND: andConditions } : {};
+
+  const result = await prisma.specialization.findMany({
+    include: {
+      doctors:true
+    },
+    where: whereConditions,
+    skip,
+    take: limit,
+    orderBy:
+      options.sortBy && options.sortOrder
+        ? { [options.sortBy]: options.sortOrder }
+        : {
+            createdAt: 'desc',
+          },
+  });
+  const total = await prisma.specialization.count({
+    where: whereConditions,
+  });
+  const totalPage = Math.ceil(total / limit);
+  return {
+    meta: {
+      page,
+      limit,
+      total,
+      totalPage,
+    },
+    data: result,
+  };
+};
+
+
+
+export const SpecializationService = {
+  createSpecialization,
+  getAllSpecialization,
+};

@@ -64,6 +64,8 @@ const createNewUser = async (req: Request) => {
     });
 
     if (createdProfile.role == userRole.DOCTOR) {
+      console.log('sahfin', data);
+
       await transactionClient.doctor.create({
         data: {
           qualification: data.qualification,
