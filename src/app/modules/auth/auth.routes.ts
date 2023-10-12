@@ -1,9 +1,8 @@
 import express, { NextFunction, Request, Response } from 'express';
 import { FileUploadHelper } from '../../../helpers/FileUploadHelper';
-import auth from '../../middlewares/auth';
 import { UserValidation } from '../users/user.validations';
 import { AuthController } from './auth.controller';
-import { userRole } from '@prisma/client';
+
 import validateRequest from '../../middlewares/validateRequest';
 
 const router = express.Router();
@@ -23,10 +22,6 @@ router.post(
   AuthController.userLogin
 );
 
-router.post(
-  '/refresh-token',
-  auth(userRole.ADMIN, userRole.SUPER_ADMIN, userRole.USER),
-  AuthController.refreshToken
-);
+router.post('/refresh-token', AuthController.refreshToken);
 
 export const AuthRoutes = router;

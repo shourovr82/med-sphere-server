@@ -11,180 +11,166 @@ datasource db {
 }
 
 model User {
-  userId        String       @id @default(uuid())
-  email         String       @unique
-  password      String
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-  role          userRole
+  userId    String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   // 
-  userProfileId String?      @unique
-  userProfile   UserProfile? @relation(fields: [userProfileId], references: [userProfileId])
-
-  adminProfileId      String?            @unique
-  adminProfile        AdminProfile?      @relation(fields: [adminProfileId], references: [adminProfileId])
-  superAdminProfileId String?            @unique
-  superAdminProfile   SuperAdminProfile? @relation(fields: [superAdminProfileId], references: [superAdminProfileId])
-  doctorProfileId     String?            @unique
-  doctorProfile       DoctorProfile?     @relation(fields: [doctorProfileId], references: [doctorProfileId])
+  profileId String?  @unique
+  profile   Profile? @relation(fields: [profileId], references: [profileId])
 
   @@map("users")
 }
 
-model UserProfile {
-  userProfileId    String             @id @default(uuid())
-  firstName        String
-  lastName         String
-  profileImage     String
-  contactNumber    String?
-  address          String?
-  coverPhoto       String?
-  bloodGroup       String?
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
-  user             User?
-  reviewAndRatings ReviewAndRatings[]
+model Profile {
+  profileId          String               @id @default(uuid())
+  firstName          String
+  lastName           String
+  profileImage       String
+  role               userRole
+  contactNumber      String?
+  address            String?
+  coverPhoto         String?
+  bloodGroup         String?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  user               User?
+  reviewAndRatings   ReviewAndRatings[]
+  doctorId           String?              @unique
+  doctor             Doctor?              @relation(fields: [doctorId], references: [doctorId])
+  appointmentBooking AppointmentBooking[]
+  products           Product[]
+  blogs              Blog[]
+  feedBackForms      FeedBackForm[]
+  Faq                Faq[]
 
-  @@map("user_profiles")
+  @@map("profiles")
 }
 
-model AdminProfile {
-  adminProfileId String    @id @default(uuid())
-  firstName      String
-  lastName       String
-  profileImage   String
-  contactNumber  String?
-  address        String?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  user           User?
-  blogs          Blog[]
-  products       Product[]
-  services       Service[]
-
-  @@map("admin_profiles")
-}
-
-model SuperAdminProfile {
-  superAdminProfileId String   @id @default(uuid())
-  firstName           String
-  lastName            String
-  profileImage        String
-  contactNumber       String?
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
-  user                User?
-
-  @@map("super_admin_profiles")
-}
-
-model DoctorProfile {
-  doctorProfileId  String            @id @default(uuid())
-  firstName        String
-  lastName         String
-  email            String            @unique
-  phoneNumber      String            @unique
-  role             userRole
+model Doctor {
+  doctorId         String         @id @default(uuid())
   qualification    String
-  specializationId String
-  specialization   Specialization    @relation(fields: [specializationId], references: [id])
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  availabilities   AvailableDoctor[]
-  user             User?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  // 
+  profile          Profile?
+  specializationId String         @map("specialization_id")
+  specialization   Specialization @relation(fields: [specializationId], references: [specializationId])
 
-  @@map("doctor_profiles")
+  @@map("doctors")
 }
 
 model Service {
-  serviceId      String        @id @default(uuid())
-  serviceName    String        @unique
-  description    String?
-  serviceImage   String
-  serviceStatus  serviceStatus @default(available)
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  serviceId         String               @id @default(uuid())
+  serviceName       String               @unique
+  description       String
+  serviceImage      String
+  servicePrice      Int
+  location          String
+  serviceStatus     serviceStatus        @default(available)
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
   // 
-  categoryId     String
-  category       Category      @relation(fields: [categoryId], references: [categoryId])
-  adminProfileId String
-  adminProfile   AdminProfile  @relation(fields: [adminProfileId], references: [adminProfileId])
-  appointments   Appointment[]
-  products       Product[]
+  categoryId        String
+  category          Category             @relation(fields: [categoryId], references: [categoryId])
+  appointmentBooked AppointmentBooking[]
+  products          Product[]
+  reviewAndRatings  ReviewAndRatings[]
+  feedBackForms     FeedBackForm[]
 
   @@map("services")
 }
 
 model Category {
-  categoryId    String    @id @default(uuid())
-  categoryName  String    @unique
-  description   String?
-  categoryImage String
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  categoryId   String    @id @default(uuid())
+  categoryName String    @unique
+  description  String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
   // relations
-  services      Service[]
+  services     Service[]
 
   @@map("categories")
 }
 
 model ReviewAndRatings {
-  reviewId      String      @id @default(uuid())
+  reviewId      String   @id @default(uuid())
   reviewComment String
   reviewRating  String
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
   // relations
-  userProfileId String
-  userProfile   UserProfile @relation(fields: [userProfileId], references: [userProfileId])
+  profileId     String
+  profile       Profile  @relation(fields: [profileId], references: [profileId])
+  // 
+  serviceId     String
+  service       Service  @relation(fields: [serviceId], references: [serviceId])
 
   @@map("reviews_and_ratings")
 }
 
 model Blog {
-  blogId          String       @id @default(uuid())
+  blogId          String   @id @default(uuid())
   blogTitle       String
   blogDescription String
   blogImage       String
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
-  // relations
-  adminProfileId  String
-  adminProfile    AdminProfile @relation(fields: [adminProfileId], references: [adminProfileId])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  // 
+  profilId        String
+  profile         Profile  @relation(fields: [profilId], references: [profileId])
 
+  // relations
   @@map("blogs")
 }
 
+model Faq {
+  blogId          String   @id @default(uuid())
+  blogTitle       String
+  blogDescription String
+  blogImage       String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  // 
+  profilId        String
+  profile         Profile  @relation(fields: [profilId], references: [profileId])
+
+  // relations
+  @@map("faqs")
+}
+
 model Product {
-  productId          String       @id @default(uuid())
+  productId          String         @id @default(uuid())
   productTitle       String
   productDescription String
   productImage       String
-  productPrice       String
-  createdAt          DateTime     @default(now())
-  updatedAt          DateTime     @updatedAt
+  productPrice       Int
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
   // relations
-  adminProfileId     String
-  adminProfile       AdminProfile @relation(fields: [adminProfileId], references: [adminProfileId])
-  // 
   serviceId          String
-  service            Service      @relation(fields: [serviceId], references: [serviceId])
+  service            Service        @relation(fields: [serviceId], references: [serviceId])
+  // 
+  profilId           String
+  profile            Profile        @relation(fields: [profilId], references: [profileId])
+  feedBackForms      FeedBackForm[]
 
   @@map("products")
 }
 
 model Specialization {
-  id          String          @id @default(uuid())
-  name        String          @unique
-  description String?
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
-  doctors     DoctorProfile[]
+  specializationId   String   @id @default(uuid())
+  specializationName String   @unique
+  description        String
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  doctors            Doctor[]
 
   @@map("specializations")
 }
 
-model Appointment {
+model AppointmentBooking {
   appointmentId     String            @id @default(uuid())
   appointmentDate   DateTime
   appointmentStatus appointmentStatus @default(pending)
@@ -194,45 +180,55 @@ model Appointment {
   serviceId         String
   service           Service           @relation(fields: [serviceId], references: [serviceId])
   // 
+  profileId         String
+  profile           Profile           @relation(fields: [profileId], references: [profileId])
+  // 
   slotId            String
   slot              TimeSlot          @relation(fields: [slotId], references: [slotId])
 
-  @@map("appointments")
+  @@map("appointment_bookings")
 }
 
 model TimeSlot {
-  slotId       String        @id @default(uuid())
-  startTime    DateTime
-  endTime      DateTime
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  slotId       String               @id @default(uuid())
+  startTime    String
+  endTime      String
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
   // 
-  appointments Appointment[]
+  appointments AppointmentBooking[]
 
   @@map("time_slots")
 }
 
-model AvailableDoctor {
-  id                           String         @id @default(uuid())
-  availableDate                DateTime       @map("available_date")
-  createdAt                    DateTime       @default(now())
-  updatedAt                    DateTime       @updatedAt
+model FeedBackForm {
+  feedbackId      String   @id @default(uuid())
+  feedbackComment String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
   // 
-  slotId                       String         @map("slot_id")
+  serviceId       String
+  service         Service  @relation(fields: [serviceId], references: [serviceId])
   // 
-  DoctorProfile                DoctorProfile? @relation(fields: [doctorProfileDoctorProfileId], references: [doctorProfileId])
-  doctorProfileDoctorProfileId String?
+  productId       String
+  product         Product  @relation(fields: [productId], references: [productId])
+  // 
+  profileId       String
+  profile         Profile  @relation(fields: [profileId], references: [profileId])
 
-  @@map("available_doctors")
+  // 
+  @@map("feedback_forms")
 }
 
 enum userRole {
   USER
   ADMIN
   SUPER_ADMIN
+  DOCTOR
 }
 
 enum appointmentStatus {
+  cancelled
   pending
   approved
   rejected
@@ -241,4 +237,5 @@ enum appointmentStatus {
 enum serviceStatus {
   available
   upcoming
+  rejected
 }

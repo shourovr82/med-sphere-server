@@ -1,7 +1,6 @@
 import express from 'express';
 import auth from '../../middlewares/auth';
-import validateRequest from '../../middlewares/validateRequest';
-import { UserValidation } from './user.validations';
+
 import { UserController } from './users.controller';
 import { userRole } from '@prisma/client';
 
@@ -10,7 +9,7 @@ const router = express.Router();
 // !  get all Users ------------------------------>>>
 router.get(
   '/',
-  auth(userRole.admin, userRole.superadmin),
+  auth(userRole.ADMIN, userRole.SUPER_ADMIN),
   UserController.getAllUsersController
 );
 

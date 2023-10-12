@@ -9,6 +9,7 @@ import { UserService } from './user.service';
 const getAllUsersController = catchAsync(
   async (req: Request, res: Response) => {
     const options = pick(req.query, ['limit', 'page', 'sortBy', 'sortOrder']);
+
     const result = await UserService.getAllUserService(options);
 
     sendResponse(res, {

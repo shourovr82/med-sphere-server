@@ -10,6 +10,8 @@ const auth = (...requiredRoles: string[]) => {
     try {
       const token = req.headers.authorization;
 
+      console.log(token);
+
       // If there's no token, the user is not authorized.
       if (!token) {
         throw new ApiError(
