@@ -24,4 +24,4 @@ export const studentRelationalFieldsMapper: { [key: string]: string } = {
   academicSemesterId: 'academicSemester',
 };
 
-export const ZodUserRoles = ['SUPER_ADMIN', 'ADMIN', 'USER'];
+export const ZodUserRoles = ['SUPER_ADMIN', 'ADMIN', 'USER', 'DOCTOR'];

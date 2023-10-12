@@ -1,5 +1,3 @@
-# Portal Server 24-7
+# MedSphere
 
 ### ER Diagram
-
-![Alt text](image.png)

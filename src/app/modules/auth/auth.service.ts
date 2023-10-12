@@ -52,94 +52,35 @@ const createNewUser = async (req: Request) => {
       firstName: data.firstName,
       lastName: data.lastName,
       profileImage: data.profileImage!,
+      role: data.role,
     };
-    let createdProfile;
-    let createdUser;
 
-    if (data.role === userRole.USER) {
-      createdProfile = await transactionClient.userProfile.create({
-        data: profileData,
-      });
+    const createdProfile = await transactionClient.profile.create({
+      data: profileData,
+      select: {
+        profileId: true,
+      },
+    });
 
-      if (!createdProfile) {
-        throw new ApiError(httpStatus.BAD_REQUEST, 'Profile creation failed');
-      }
-
-      createdUser = await transactionClient.user.create({
-        data: {
-          email,
-          password: hashedPassword,
-          role: data.role,
-          userProfile: {
-            connect: {
-              userProfileId: createdProfile.userProfileId,
-            },
+    const createdUser = await transactionClient.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+        profile: {
+          connect: {
+            profileId: createdProfile.profileId,
           },
         },
-        select: {
-          userProfileId: true,
-          createdAt: true,
-          email: true,
-          userId: true,
-        },
-      });
-    } else if (data.role === userRole.ADMIN) {
-      createdProfile = await transactionClient.adminProfile.create({
-        data: profileData,
-      });
+      },
+      select: {
+        profileId: true,
+        createdAt: true,
+        email: true,
+        userId: true,
+      },
+    });
 
-      if (!createdProfile) {
-        throw new ApiError(httpStatus.BAD_REQUEST, 'Admin creation failed');
-      }
-
-      createdUser = await transactionClient.user.create({
-        data: {
-          email,
-          role: data.role,
-          password: hashedPassword,
-          adminProfile: {
-            connect: {
-              adminProfileId: createdProfile.adminProfileId,
-            },
-          },
-        },
-        select: {
-          adminProfileId: true,
-          createdAt: true,
-          email: true,
-          userId: true,
-        },
-      });
-    } else if (data.role === userRole.SUPER_ADMIN) {
-      createdProfile = await transactionClient.superAdminProfile.create({
-        data: profileData,
-      });
-
-      if (!createdProfile) {
-        throw new ApiError(httpStatus.BAD_REQUEST, 'Admin creation failed');
-      }
-
-      createdUser = await transactionClient.user.create({
-        data: {
-          email,
-          role: data.role,
-          password: hashedPassword,
-          superAdminProfile: {
-            connect: {
-              superAdminProfileId: createdProfile.superAdminProfileId,
-            },
-          },
-        },
-        select: {
-          superAdminProfileId: true,
-          createdAt: true,
-          email: true,
-          userId: true,
-        },
-      });
-    }
-
-    if (!createdUser && !createdProfile) {
+    if (!createdUser || !createdProfile) {
       throw new ApiError(httpStatus.BAD_REQUEST, 'Creating New User Failed');
     }
 
@@ -161,12 +102,13 @@ const userLogin = async (
     },
     select: {
       userId: true,
-      email: true,
-      role: true,
       password: true,
-      adminProfile: true,
-      userProfile: true,
-      superAdminProfile: true,
+      profile: {
+        select: {
+          role: true,
+          profileId: true,
+        },
+      },
     },
   });
 
@@ -183,23 +125,14 @@ const userLogin = async (
   type TokenData = {
     userId: string;
     role: userRole;
-    profileId?: string;
+    profileId: string;
   };
 
   const tokenData: TokenData = {
     userId: isUserExist.userId,
-    role: isUserExist?.role,
+    role: isUserExist?.profile?.role!,
+    profileId: isUserExist.profile?.profileId!,
   };
-
-  if (isUserExist.role === userRole.USER) {
-    tokenData['profileId'] = isUserExist?.userProfile?.userProfileId!;
-  } else if (isUserExist.role === userRole.ADMIN) {
-    tokenData['profileId'] = isUserExist?.adminProfile?.adminProfileId!;
-  }
-  if (isUserExist.role === userRole.SUPER_ADMIN) {
-    tokenData['profileId'] =
-      isUserExist?.superAdminProfile?.superAdminProfileId!;
-  }
 
   const accessToken = jwtHelpers.createToken(
     tokenData,
@@ -231,7 +164,6 @@ const refreshToken = async (token: string): Promise<IRefreshTokenResponse> => {
       config.jwt.refresh_secret as Secret
     );
   } catch (error) {
-    console.log(error);
     // err
     throw new ApiError(httpStatus.FORBIDDEN, 'Invalid Refresh Token');
   }
@@ -245,12 +177,13 @@ const refreshToken = async (token: string): Promise<IRefreshTokenResponse> => {
     },
     select: {
       userId: true,
-      email: true,
-      role: true,
       password: true,
-      adminProfile: true,
-      userProfile: true,
-      superAdminProfile: true,
+      profile: {
+        select: {
+          role: true,
+          profileId: true,
+        },
+      },
     },
   });
   if (!isUserExist) {
@@ -260,23 +193,14 @@ const refreshToken = async (token: string): Promise<IRefreshTokenResponse> => {
   type TokenData = {
     userId: string;
     role: userRole;
-    profileId?: string;
+    profileId: string;
   };
 
   const tokenData: TokenData = {
     userId: isUserExist.userId,
-    role: isUserExist?.role,
+    role: isUserExist?.profile?.role!,
+    profileId: isUserExist?.profile?.profileId!,
   };
-
-  if (isUserExist.role === userRole.USER) {
-    tokenData['profileId'] = isUserExist?.userProfile?.userProfileId!;
-  } else if (isUserExist.role === userRole.ADMIN) {
-    tokenData['profileId'] = isUserExist?.adminProfile?.adminProfileId!;
-  }
-  if (isUserExist.role === userRole.SUPER_ADMIN) {
-    tokenData['profileId'] =
-      isUserExist?.superAdminProfile?.superAdminProfileId!;
-  }
 
   // generate new token
   const newAccessToken = jwtHelpers.createToken(
