@@ -122,8 +122,30 @@ const getAllServices = async (
     include: {
       category: true,
       products: true,
-      reviewAndRatings: true,
-      feedBackForms: true,
+      reviewAndRatings: {
+        include: {
+          profile: {
+            select: {
+              firstName: true,
+              lastName: true,
+              profileId: true,
+              profileImage: true,
+            },
+          },
+        },
+      },
+      feedBackForms: {
+        include: {
+          profile: {
+            select: {
+              firstName: true,
+              lastName: true,
+              profileId: true,
+              profileImage: true,
+            },
+          },
+        },
+      },
       appointmentBooked: true,
     },
     where: whereConditions,
@@ -159,11 +181,33 @@ const getSingleService = async (serviceId: string): Promise<Service | null> => {
       serviceId,
     },
     include: {
-      appointmentBooked: true,
       category: true,
       products: true,
-      reviewAndRatings: true,
-      feedBackForms: true,
+      reviewAndRatings: {
+        include: {
+          profile: {
+            select: {
+              firstName: true,
+              lastName: true,
+              profileId: true,
+              profileImage: true,
+            },
+          },
+        },
+      },
+      feedBackForms: {
+        include: {
+          profile: {
+            select: {
+              firstName: true,
+              lastName: true,
+              profileId: true,
+              profileImage: true,
+            },
+          },
+        },
+      },
+      appointmentBooked: true,
     },
   });
   if (!result) {

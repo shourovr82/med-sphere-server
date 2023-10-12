@@ -8,6 +8,8 @@ import { SpecializationRoutes } from '../modules/specializations/specialization.
 import { MedServiceRoutes } from '../modules/services/service.routes';
 import { CategoryRoutes } from '../modules/category/category.routes';
 import { ReviewAndRatingRoutes } from '../modules/reviewAndRatings/reviewAndRating.routes';
+import { FeedBackRoutes } from '../modules/feedBackForms/feedBackForm.routes';
+import { AppointmentBookingRoutes } from '../modules/appointmentBooking/appointmentBooking.routes';
 // import { AuthRoutes } from '../modules/auth/auth.routes';
 
 const router = express.Router();
@@ -44,6 +46,14 @@ const moduleRoutes = [
   {
     path: '/review-ratings',
     route: ReviewAndRatingRoutes,
+  },
+  {
+    path: '/feedback-forms',
+    route: FeedBackRoutes,
+  },
+  {
+    path: '/appointment-booking',
+    route: AppointmentBookingRoutes,
   },
 ];
 
