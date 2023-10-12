@@ -1,6 +1,18 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+import httpStatus from 'http-status';
+import ApiError from '../../../errors/ApiError';
 import { paginationHelpers } from '../../../helpers/paginationHelper';
 import { IPaginationOptions } from '../../../interfaces/pagination';
 import prisma from '../../../shared/prisma';
+
+import bcrypt from 'bcrypt';
+import config from '../../../config';
+import {
+  IProfileUpdateRequest,
+  IUpdateUserResponse,
+  IUserUpdateReqAndResponse,
+  IUsersResponse,
+} from './user.interface';
 
 // ! getting all users ----------------------------------------------------------------------->>>
 const getAllUserService = async (options: IPaginationOptions) => {
@@ -9,6 +21,12 @@ const getAllUserService = async (options: IPaginationOptions) => {
   const result = await prisma.user.findMany({
     skip,
     take: limit,
+    select: {
+      userId: true,
+      email: true,
+      createdAt: true,
+      profile: true,
+    },
   });
   const total = await prisma.user.count();
 
@@ -26,196 +44,267 @@ const getAllUserService = async (options: IPaginationOptions) => {
 };
 
 // ! getting single user data -------------------------------------------------------->>>
-// const getSingleUser = async (id: string): Promise<IUsersResponse | null> => {
-//   // Check if the user exists
-//   const existingUser = await prisma.user.findUnique({
-//     where: {
-//       id,
-//     },
-//   });
+const getSingleUser = async (
+  userId: string
+): Promise<IUsersResponse | null> => {
+  // Check if the user exists
+  const existingUser = await prisma.user.findUnique({
+    where: {
+      userId,
+    },
+    select: {
+      profileId: true,
+    },
+  });
 
-//   if (!existingUser) {
-//     throw new ApiError(httpStatus.NOT_FOUND, 'User not Found !!');
-//   }
+  if (!existingUser) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not Found !!');
+  }
 
-//   const result = await prisma.user.findUnique({
-//     where: {
-//       id,
-//     },
-//     select: {
-//       id: true,
-//       email: true,
-//       // profile: {
-//       //   select: {
-//       //     profileId: true,
-//       //     firstName: true,
-//       //     lastName: true,
-//       //     role: true,
-//       //     profileImage: true,
-//       //     createdAt: true,
-//       //     updatedAt: true,
-//       //     Orders: true,
-//       //     Styles: true,
-//       //   },
-//       // },
-//       createdAt: true,
-//       updatedAt: true,
-//     },
-//   });
+  const result = await prisma.user.findUnique({
+    where: {
+      profileId: existingUser.profileId!,
+    },
+    select: {
+      userId: true,
+      email: true,
+      profile: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
 
-//   if (!result) {
-//     throw new ApiError(httpStatus.NOT_FOUND, 'User not Found !!');
-//   }
+  if (!result) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Profile not Found !!');
+  }
 
-//   return result;
-// };
+  return result;
+};
 
-// ! update Profile info -------------------------------------------------------->>>
-// const updateProfileInfo = async (
-//   profileId: string,
-//   payload: IUpdateProfileReqAndResponse
-// ): Promise<{
-//   message: string;
-//   updatedInfo: IUpdateProfileReqAndResponse;
-// }> => {
-//   // Ensure ProfileId cannot be changed
-//   if ('profileId' in payload) {
-//     throw new ApiError(httpStatus.BAD_REQUEST, `Profile ID cannot be changed`);
-//   }
+const updateProfileInfo = async (
+  profileId: string,
+  payload: IProfileUpdateRequest
+): Promise<{
+  message: string;
+  updatedInfo: IProfileUpdateRequest;
+}> => {
+  // Ensure ProfileId cannot be changed
+  if ('profileId' in payload) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Profile ID cannot be changed');
+  }
 
-//   // Check if the user exists
-//   const existingUser = await prisma.profile.findUnique({
-//     where: {
-//       profileId,
-//     },
-//   });
+  // Check if the profile exists
+  const existingProfile = await prisma.profile.findUnique({
+    where: {
+      profileId,
+    },
+  });
 
-//   if (!existingUser) {
-//     throw new ApiError(httpStatus.NOT_FOUND, 'Profile not Found !!');
-//   }
+  if (!existingProfile) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Profile not found!');
+  }
 
-//   // Update the Profile
-//   const result = await prisma.profile.update({
-//     where: {
-//       profileId,
-//     },
-//     data: {
-//       firstName: payload?.firstName,
-//       lastName: payload?.lastName,
-//       profileImage: payload?.profileImage,
-//       role: payload?.role,
-//     },
-//   });
+  // Extract relevant properties from the payload
+  const { firstName, lastName, profileImage, role } = payload;
 
-//   if (!result) {
-//     throw new ApiError(httpStatus.BAD_REQUEST, 'Profile Update Failed');
-//   }
+  // Build the update data based on provided fields
+  const updateData: Partial<IProfileUpdateRequest> = {};
 
-//   return {
-//     message: 'Profile Information Updated Successful',
-//     updatedInfo: payload,
-//   };
-// };
+  if (firstName !== undefined) {
+    updateData.firstName = firstName;
+  }
+
+  if (lastName !== undefined) {
+    updateData.lastName = lastName;
+  }
+
+  if (profileImage !== undefined) {
+    updateData.profileImage = profileImage;
+  }
+
+  if (role !== undefined) {
+    updateData.role = role;
+  }
+
+  // Check if any data is provided for update
+  if (Object.keys(updateData).length === 0) {
+    return {
+      message: 'No changes to update',
+      updatedInfo: {},
+    };
+  }
+
+  // Update the profile
+  const result = await prisma.profile.update({
+    where: {
+      profileId,
+    },
+    data: updateData,
+  });
+
+  if (!result) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Profile update failed');
+  }
+
+  return {
+    message: 'Profile information updated successfully',
+    updatedInfo: updateData,
+  };
+};
+const updateMyProfileInfo = async (
+  profileId: string,
+  payload: IProfileUpdateRequest
+): Promise<{
+  message: string;
+  updatedInfo: IProfileUpdateRequest;
+}> => {
+  // Ensure ProfileId cannot be changed
+  if ('profileId' in payload) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Profile ID cannot be changed');
+  }
+
+  // Check if the profile exists
+  const existingProfile = await prisma.profile.findUnique({
+    where: {
+      profileId,
+    },
+  });
+
+  if (!existingProfile) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Profile not found!');
+  }
+
+  // Extract relevant properties from the payload
+  const { firstName, lastName, profileImage, role } = payload;
+
+  // Build the update data based on provided fields
+  const updateData: Partial<IProfileUpdateRequest> = {};
+
+  if (firstName !== undefined) {
+    updateData.firstName = firstName;
+  }
+
+  if (lastName !== undefined) {
+    updateData.lastName = lastName;
+  }
+
+  if (profileImage !== undefined) {
+    updateData.profileImage = profileImage;
+  }
+
+  if (role !== undefined) {
+    updateData.role = role;
+  }
+
+  // Check if any data is provided for update
+  if (Object.keys(updateData).length === 0) {
+    return {
+      message: 'No changes to update',
+      updatedInfo: {},
+    };
+  }
+
+  // Update the profile
+  const result = await prisma.profile.update({
+    where: {
+      profileId,
+    },
+    data: updateData,
+  });
+
+  if (!result) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Profile update failed');
+  }
+
+  return {
+    message: 'Profile information updated successfully',
+    updatedInfo: updateData,
+  };
+};
 
 // ! update user info -------------------------------------------------------->>>
-// const updateUserInfo = async (
-//   userId: string,
-//   payload: Partial<IUserUpdateReqAndResponse>
-// ): Promise<{
-//   message: string;
-//   updatedInfo: IUserUpdateReqAndResponse;
-// }> => {
-//   if ('userId' in payload) {
-//     throw new ApiError(httpStatus.BAD_REQUEST, `User ID cannot be changed`);
-//   }
 
-//   // Check if the user exists
-//   const existingUser = await prisma.user.findUnique({
-//     where: {
-//       id,
-//     },
-//   });
+const updateUserInfo = async (
+  userId: string,
+  { password, email }: IUserUpdateReqAndResponse
+): Promise<IUpdateUserResponse> => {
+  if ('userId' in { userId, password, email }) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'User ID cannot be changed');
+  }
 
-//   if (!existingUser) {
-//     throw new ApiError(httpStatus.NOT_FOUND, 'User not Found !!');
-//   }
+  const existingUser = await prisma.user.findUnique({ where: { userId } });
 
-//   const { password, email } = payload;
+  if (!existingUser) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found!');
+  }
 
-//   let updatedData: Partial<User> = { email };
+  const updatedData: { email?: string; password?: string } = {};
 
-//   // If a new password is provided, hash and include it in the update
-//   if (password) {
-//     const hashPassword = await bcrypt.hash(
-//       password,
-//       Number(config.bcrypt_salt_rounds)
-//     );
-//     updatedData = {
-//       email,
-//       password: hashPassword,
-//     };
-//   }
-//   //  update the user Information
+  if (password) {
+    const hashPassword = await bcrypt.hash(
+      password,
+      Number(config.bcrypt_salt_rounds)
+    );
+    updatedData.password = hashPassword;
+  }
 
-//   const result = await prisma.user.update({
-//     where: {
-//       id,
-//     },
-//     data: updatedData,
-//   });
+  if (email) {
+    updatedData.email = email;
+  }
 
-//   if (!result) {
-//     throw new ApiError(httpStatus.BAD_REQUEST, 'User Update Failed');
-//   }
+  if (Object.keys(updatedData).length === 0) {
+    return {
+      message: 'No changes to update',
+      updatedInfo: {},
+    };
+  }
 
-//   return {
-//     message: 'User Information Updated Successful',
-//     updatedInfo: {
-//       email: email,
-//       password: password,
-//     },
-//   };
-// };
+  const result = await prisma.user.update({
+    where: { userId },
+    data: updatedData,
+  });
+
+  if (!result) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'User update failed');
+  }
+
+  return {
+    message: 'User information updated successfully',
+    updatedInfo: {
+      email: email || 'Not updated',
+      password: password ? 'Updated' : 'Not updated',
+    },
+  };
+};
 
 //! get my profile ----------------------------------------------------------------------->>>
-// const getMyProfile = async (id: string): Promise<any | null> => {
-//   const result = await prisma.user.findUnique({
-//     where: {
-//       id,
-//     },
-//     select: {
-//       id: true,
-//       email: true,
-//       // profile: {
-//       //   select: {
-//       //     profileId: true,
-//       //     firstName: true,
-//       //     lastName: true,
-//       //     role: true,
-//       //     profileImage: true,
-//       //     createdAt: true,
-//       //     updatedAt: true,
-//       //     Orders: true,
-//       //     Styles: true,
-//       //   },
-//       // },
-//       createdAt: true,
-//       updatedAt: true,
-//     },
-//   });
+const getMyProfile = async (userId: string): Promise<IUsersResponse | null> => {
+  const result = await prisma.user.findUnique({
+    where: {
+      userId,
+    },
+    select: {
+      userId: true,
+      email: true,
+      profile: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
 
-//   if (!result) {
-//     throw new ApiError(httpStatus.NOT_FOUND, 'User not Found !!');
-//   }
+  if (!result) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not Found !!');
+  }
 
-//   return result;
-// };
+  return result;
+};
 
 // ! --------------- exports all user service
 export const UserService = {
   getAllUserService,
-  // getSingleUser,
-  // updateProfileInfo,
-  // updateUserInfo,
-  // getMyProfile,
+  getSingleUser,
+  updateProfileInfo,
+  updateUserInfo,
+  getMyProfile,
+  updateMyProfileInfo,
 };

@@ -29,19 +29,11 @@ const createUser = z.object({
 
 const updateUser = z.object({
   body: z.object({
-    firstName: z
-      .string({ invalid_type_error: 'First Name must be in string' })
+    email: z
+      .string({ invalid_type_error: 'Email  must be valid in string' })
       .optional(),
-    lastName: z
-      .string({ invalid_type_error: 'Last Name must be in string' })
-      .optional(),
-    profileImage: z
-      .string({ invalid_type_error: 'profileImage must be in string' })
-      .optional(),
-    role: z
-      .enum([...ZodUserRoles] as [string, ...string[]], {
-        invalid_type_error: 'role must be in string',
-      })
+    password: z
+      .string({ invalid_type_error: 'Password must be in string' })
       .optional(),
   }),
 });

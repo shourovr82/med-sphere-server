@@ -37,13 +37,12 @@ model Profile {
   updatedAt          DateTime             @updatedAt
   user               User?
   reviewAndRatings   ReviewAndRatings[]
-  doctorId           String?              @unique
-  doctor             Doctor?              @relation(fields: [doctorId], references: [doctorId])
   appointmentBooking AppointmentBooking[]
   products           Product[]
   blogs              Blog[]
   feedBackForms      FeedBackForm[]
   Faq                Faq[]
+  Doctor             Doctor?
 
   @@map("profiles")
 }
@@ -54,7 +53,8 @@ model Doctor {
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
   // 
-  profile          Profile?
+  profileId        String         @unique
+  profile          Profile        @relation(fields: [profileId], references: [profileId])
   specializationId String         @map("specialization_id")
   specialization   Specialization @relation(fields: [specializationId], references: [specializationId])
 

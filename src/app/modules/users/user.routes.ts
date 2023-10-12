@@ -3,6 +3,8 @@ import auth from '../../middlewares/auth';
 
 import { UserController } from './users.controller';
 import { userRole } from '@prisma/client';
+import validateRequest from '../../middlewares/validateRequest';
+import { UserValidation } from './user.validations';
 
 const router = express.Router();
 
@@ -14,30 +16,37 @@ router.get(
 );
 
 // !  get My Profile ------------------------------>>>
-// router.get(
-//   '/my-profile',
-//   auth(userRole.admin, userRole.superadmin),
-//   UserController.getMyProfile
-// );
+router.get(
+  '/my-profile',
+  auth(userRole.ADMIN, userRole.SUPER_ADMIN, userRole.USER, userRole.DOCTOR),
+  UserController.getMyProfile
+);
 // !  Update  User data ------------------------------>>>
-// router.patch(
-//   '/update-user/:userId',
-//   auth(userRole.admin, userRole.superadmin),
-//   validateRequest(UserValidation.updateUser),
-//   UserController.updateUserInfo
-// );
+router.patch(
+  '/update-user/:userId',
+  auth(userRole.ADMIN, userRole.SUPER_ADMIN),
+  validateRequest(UserValidation.updateUser),
+  UserController.updateUserInfo
+);
 // !  Update  Profile data ------------------------------>>>
-// router.patch(
-//   '/update-profile/:profileId',
-//   auth(userRole.admin, userRole.superadmin),
-//   validateRequest(UserValidation.updateUser),
-//   UserController.updateProfileInfo
-// );
+router.patch(
+  '/update-profile/:profileId',
+  auth(userRole.ADMIN, userRole.SUPER_ADMIN, userRole.USER, userRole.DOCTOR),
+  validateRequest(UserValidation.updateUser),
+  UserController.updateProfileInfo
+);
+// !  Update  My Profile data ------------------------------>>>
+router.patch(
+  '/update-my-profile',
+  auth(userRole.ADMIN, userRole.SUPER_ADMIN, userRole.USER, userRole.DOCTOR),
+  validateRequest(UserValidation.updateUser),
+  UserController.updateMyProfileInfo
+);
 // !  get single user ------------------------------>>>
-// router.get(
-//   '/:userId',
-//   auth(userRole.admin, userRole.superadmin),
-//   UserController.getSingleUser
-// );
+router.get(
+  '/:userId',
+  auth(userRole.ADMIN, userRole.SUPER_ADMIN),
+  UserController.getSingleUser
+);
 
 export const UserRoutes = router;
