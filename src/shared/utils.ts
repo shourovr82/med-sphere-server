@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export const asyncForEach = async (array: any[], callback: any) => {
   if (!Array.isArray(array)) {
     throw new Error('Expected an array');
@@ -8,7 +9,6 @@ export const asyncForEach = async (array: any[], callback: any) => {
 };
 
 export const isValidISOString = (value: string): boolean => {
-  console.log(value);
   try {
     new Date(value).toISOString();
     return true;

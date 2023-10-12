@@ -55,7 +55,7 @@ model Doctor {
   // 
   profileId        String         @unique
   profile          Profile        @relation(fields: [profileId], references: [profileId])
-  specializationId String         @map("specialization_id")
+  specializationId String
   specialization   Specialization @relation(fields: [specializationId], references: [specializationId])
 
   @@map("doctors")
@@ -191,8 +191,8 @@ model AppointmentBooking {
 
 model TimeSlot {
   slotId       String               @id @default(uuid())
-  startTime    String
-  endTime      String
+  startTime    DateTime             @unique
+  endTime      DateTime             @unique
   createdAt    DateTime             @default(now())
   updatedAt    DateTime             @updatedAt
   // 

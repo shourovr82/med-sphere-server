@@ -31,7 +31,7 @@ router.patch(
 // !  Update  Profile data ------------------------------>>>
 router.patch(
   '/update-profile/:profileId',
-  auth(userRole.ADMIN, userRole.SUPER_ADMIN, userRole.USER, userRole.DOCTOR),
+  auth(userRole.ADMIN, userRole.SUPER_ADMIN),
   validateRequest(UserValidation.updateUser),
   UserController.updateProfileInfo
 );

@@ -228,10 +228,6 @@ const updateUserInfo = async (
   userId: string,
   { password, email }: IUserUpdateReqAndResponse
 ): Promise<IUpdateUserResponse> => {
-  if ('userId' in { userId, password, email }) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'User ID cannot be changed');
-  }
-
   const existingUser = await prisma.user.findUnique({ where: { userId } });
 
   if (!existingUser) {

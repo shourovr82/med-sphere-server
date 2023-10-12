@@ -52,15 +52,32 @@ const createNewUser = async (req: Request) => {
       firstName: data.firstName,
       lastName: data.lastName,
       profileImage: data.profileImage!,
-      role: data.role,
+      role: data.role!,
     };
 
     const createdProfile = await transactionClient.profile.create({
-      data: profileData,
+      data: {
+        ...profileData,
+      },
       select: {
         profileId: true,
+        role: true,
       },
     });
+
+    if (createdProfile.role == userRole.DOCTOR) {
+      await transactionClient.doctor.create({
+        data: {
+          qualification: data.qualification,
+          specializationId: data.specializationId,
+          profileId: createdProfile.profileId,
+        },
+        select: {
+          profileId: true,
+          createdAt: true,
+        },
+      });
+    }
 
     const createdUser = await transactionClient.user.create({
       data: {
