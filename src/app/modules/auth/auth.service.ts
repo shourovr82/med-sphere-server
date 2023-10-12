@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import bcrypt from 'bcrypt';
 import { Request } from 'express';
 import httpStatus from 'http-status';
@@ -14,7 +16,9 @@ import {
   IUserCreate,
   IUserLogin,
 } from './auth.interface';
+import { userRole } from '@prisma/client';
 
+// ! user create
 const createNewUser = async (req: Request) => {
   const file = req.file as IUploadFile;
 
@@ -25,9 +29,10 @@ const createNewUser = async (req: Request) => {
   if (uploadedImage) {
     req.body.profileImage = uploadedImage.secure_url;
   }
-  const data = req.body as IUserCreate;
+  const data = (await req.body) as IUserCreate;
 
   const { password, email } = data;
+
   const hashedPassword = await bcrypt.hash(
     password,
     Number(config.bcrypt_salt_rounds)
@@ -46,39 +51,96 @@ const createNewUser = async (req: Request) => {
     const profileData = {
       firstName: data.firstName,
       lastName: data.lastName,
-      profileImage: data?.profileImage,
-      role: data?.role,
+      profileImage: data.profileImage!,
     };
+    let createdProfile;
+    let createdUser;
 
-    const createdProfile = await transactionClient.profile.create({
-      data: profileData,
-    });
+    if (data.role === userRole.USER) {
+      createdProfile = await transactionClient.userProfile.create({
+        data: profileData,
+      });
 
-    if (!createdProfile) {
-      throw new ApiError(httpStatus.BAD_REQUEST, 'Profile creation failed');
-    }
+      if (!createdProfile) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Profile creation failed');
+      }
 
-    const createdUser = await transactionClient.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        profile: {
-          connect: {
-            profileId: createdProfile.profileId,
+      createdUser = await transactionClient.user.create({
+        data: {
+          email,
+          password: hashedPassword,
+          role: data.role,
+          userProfile: {
+            connect: {
+              userProfileId: createdProfile.userProfileId,
+            },
           },
         },
-      },
-      select: {
-        userId: true,
-        email: true,
-        createdAt: true,
-        userIsActive: true,
-        profile: true,
-      },
-    });
+        select: {
+          userProfileId: true,
+          createdAt: true,
+          email: true,
+          userId: true,
+        },
+      });
+    } else if (data.role === userRole.ADMIN) {
+      createdProfile = await transactionClient.adminProfile.create({
+        data: profileData,
+      });
 
-    if (!createdUser) {
-      throw new ApiError(httpStatus.BAD_REQUEST, 'User creation failed');
+      if (!createdProfile) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Admin creation failed');
+      }
+
+      createdUser = await transactionClient.user.create({
+        data: {
+          email,
+          role: data.role,
+          password: hashedPassword,
+          adminProfile: {
+            connect: {
+              adminProfileId: createdProfile.adminProfileId,
+            },
+          },
+        },
+        select: {
+          adminProfileId: true,
+          createdAt: true,
+          email: true,
+          userId: true,
+        },
+      });
+    } else if (data.role === userRole.SUPER_ADMIN) {
+      createdProfile = await transactionClient.superAdminProfile.create({
+        data: profileData,
+      });
+
+      if (!createdProfile) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Admin creation failed');
+      }
+
+      createdUser = await transactionClient.user.create({
+        data: {
+          email,
+          role: data.role,
+          password: hashedPassword,
+          superAdminProfile: {
+            connect: {
+              superAdminProfileId: createdProfile.superAdminProfileId,
+            },
+          },
+        },
+        select: {
+          superAdminProfileId: true,
+          createdAt: true,
+          email: true,
+          userId: true,
+        },
+      });
+    }
+
+    if (!createdUser && !createdProfile) {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'Creating New User Failed');
     }
 
     return createdUser;
@@ -87,7 +149,7 @@ const createNewUser = async (req: Request) => {
   return newUser;
 };
 
-//login
+//! login
 const userLogin = async (
   loginData: IUserLogin
 ): Promise<ILoginUserResponse> => {
@@ -97,13 +159,14 @@ const userLogin = async (
     where: {
       email,
     },
-    include: {
-      profile: {
-        select: {
-          profileId: true,
-          role: true,
-        },
-      },
+    select: {
+      userId: true,
+      email: true,
+      role: true,
+      password: true,
+      adminProfile: true,
+      userProfile: true,
+      superAdminProfile: true,
     },
   });
 
@@ -117,24 +180,34 @@ const userLogin = async (
     throw new ApiError(httpStatus.UNAUTHORIZED, 'Password is incorrect !!');
   }
 
-  const { userId, profile } = isUserExist;
+  type TokenData = {
+    userId: string;
+    role: userRole;
+    profileId?: string;
+  };
 
-  // create access token & refresh token
+  const tokenData: TokenData = {
+    userId: isUserExist.userId,
+    role: isUserExist?.role,
+  };
+
+  if (isUserExist.role === userRole.USER) {
+    tokenData['profileId'] = isUserExist?.userProfile?.userProfileId!;
+  } else if (isUserExist.role === userRole.ADMIN) {
+    tokenData['profileId'] = isUserExist?.adminProfile?.adminProfileId!;
+  }
+  if (isUserExist.role === userRole.SUPER_ADMIN) {
+    tokenData['profileId'] =
+      isUserExist?.superAdminProfile?.superAdminProfileId!;
+  }
+
   const accessToken = jwtHelpers.createToken(
-    {
-      userId,
-      role: profile?.role,
-      profileId: profile?.profileId,
-    },
+    tokenData,
     config.jwt.secret as Secret,
     config.jwt.expires_in as string
   );
   const refreshToken = jwtHelpers.createToken(
-    {
-      userId: isUserExist.userId,
-      role: profile?.role,
-      profileId: profile?.profileId,
-    },
+    tokenData,
     config.jwt.refresh_secret as Secret,
     config.jwt.refresh_expires_in as string
   );
@@ -149,12 +222,16 @@ const userLogin = async (
 const refreshToken = async (token: string): Promise<IRefreshTokenResponse> => {
   // ! verify token
   let verifiedToken = null;
+
+  console.log(token, 'shafin=========');
+
   try {
     verifiedToken = jwtHelpers.verifyToken(
       token,
       config.jwt.refresh_secret as Secret
     );
   } catch (error) {
+    console.log(error);
     // err
     throw new ApiError(httpStatus.FORBIDDEN, 'Invalid Refresh Token');
   }
@@ -166,25 +243,44 @@ const refreshToken = async (token: string): Promise<IRefreshTokenResponse> => {
     where: {
       userId,
     },
-    include: {
-      profile: {
-        select: {
-          role: true,
-          profileId: true,
-        },
-      },
+    select: {
+      userId: true,
+      email: true,
+      role: true,
+      password: true,
+      adminProfile: true,
+      userProfile: true,
+      superAdminProfile: true,
     },
   });
   if (!isUserExist) {
     throw new ApiError(httpStatus.NOT_FOUND, 'User does not exists!!');
   }
+
+  type TokenData = {
+    userId: string;
+    role: userRole;
+    profileId?: string;
+  };
+
+  const tokenData: TokenData = {
+    userId: isUserExist.userId,
+    role: isUserExist?.role,
+  };
+
+  if (isUserExist.role === userRole.USER) {
+    tokenData['profileId'] = isUserExist?.userProfile?.userProfileId!;
+  } else if (isUserExist.role === userRole.ADMIN) {
+    tokenData['profileId'] = isUserExist?.adminProfile?.adminProfileId!;
+  }
+  if (isUserExist.role === userRole.SUPER_ADMIN) {
+    tokenData['profileId'] =
+      isUserExist?.superAdminProfile?.superAdminProfileId!;
+  }
+
   // generate new token
   const newAccessToken = jwtHelpers.createToken(
-    {
-      userId: isUserExist?.userId,
-      role: isUserExist?.profile?.role,
-      profileId: isUserExist?.profile?.profileId,
-    },
+    tokenData,
     config.jwt.secret as Secret,
     config.jwt.expires_in as string
   );

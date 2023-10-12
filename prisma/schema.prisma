@@ -11,12 +11,16 @@ datasource db {
 }
 
 model User {
-  userId              String             @id @default(uuid())
-  email               String             @unique
-  password            String
+  userId        String       @id @default(uuid())
+  email         String       @unique
+  password      String
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  role          userRole
   // 
-  userProfileId       String?            @unique
-  userProfile         UserProfile?       @relation(fields: [userProfileId], references: [userProfileId])
+  userProfileId String?      @unique
+  userProfile   UserProfile? @relation(fields: [userProfileId], references: [userProfileId])
+
   adminProfileId      String?            @unique
   adminProfile        AdminProfile?      @relation(fields: [adminProfileId], references: [adminProfileId])
   superAdminProfileId String?            @unique
@@ -29,11 +33,11 @@ model User {
 
 model UserProfile {
   userProfileId    String             @id @default(uuid())
-  name             String
-  role             userRole
-  contactNo        String
-  address          String
-  profileImg       String
+  firstName        String
+  lastName         String
+  profileImage     String
+  contactNumber    String?
+  address          String?
   coverPhoto       String?
   bloodGroup       String?
   createdAt        DateTime           @default(now())
@@ -46,10 +50,11 @@ model UserProfile {
 
 model AdminProfile {
   adminProfileId String    @id @default(uuid())
-  fullName       String
-  email          String    @unique
-  phoneNumber    String
-  role           userRole
+  firstName      String
+  lastName       String
+  profileImage   String
+  contactNumber  String?
+  address        String?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
   user           User?
@@ -62,10 +67,10 @@ model AdminProfile {
 
 model SuperAdminProfile {
   superAdminProfileId String   @id @default(uuid())
-  fullName            String
-  email               String   @unique
-  phoneNumber         String
-  role                userRole
+  firstName           String
+  lastName            String
+  profileImage        String
+  contactNumber       String?
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
   user                User?
@@ -75,7 +80,8 @@ model SuperAdminProfile {
 
 model DoctorProfile {
   doctorProfileId  String            @id @default(uuid())
-  fullName         String
+  firstName        String
+  lastName         String
   email            String            @unique
   phoneNumber      String            @unique
   role             userRole
@@ -221,9 +227,9 @@ model AvailableDoctor {
 }
 
 enum userRole {
-  user
-  admin
-  super_admin
+  USER
+  ADMIN
+  SUPER_ADMIN
 }
 
 enum appointmentStatus {

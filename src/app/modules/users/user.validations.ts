@@ -1,4 +1,4 @@
-import { UserRoles } from '@prisma/client';
+import { userRole } from '@prisma/client';
 import { z } from 'zod';
 import { ZodUserRoles } from './users.constants';
 
@@ -24,7 +24,7 @@ const createUser = z.object({
       required_error: 'Role is Required',
       invalid_type_error: 'role must be in string',
     })
-    .default(UserRoles.USER),
+    .default(userRole.USER),
 });
 
 const updateUser = z.object({
@@ -45,8 +45,21 @@ const updateUser = z.object({
       .optional(),
   }),
 });
+const loginUser = z.object({
+  body: z.object({
+    email: z.string({
+      required_error: 'Email is Required for Login',
+      invalid_type_error: 'First Name must be in string',
+    }),
+    password: z.string({
+      required_error: 'Password is required for login',
+      invalid_type_error: 'Last Name must be in string',
+    }),
+  }),
+});
 
 export const UserValidation = {
   createUser,
   updateUser,
+  loginUser,
 };
