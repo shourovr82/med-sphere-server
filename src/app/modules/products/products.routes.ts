@@ -1,44 +1,38 @@
 import express from 'express';
-
 import auth from '../../middlewares/auth';
-import { StylesController } from './products.controller';
+import { ProductsController } from './products.controller';
+
 import { userRole } from '@prisma/client';
 
 const router = express.Router();
 
 router.post(
   '/create-product',
-  auth(userRole.ADMIN),
-  // validateRequest(),
-  StylesController.createNewStyle
+  auth(userRole.ADMIN, userRole.SUPER_ADMIN),
+  ProductsController.createNewProduct
 );
-// router.get(
-//   '/',
-//   auth(UserRoles.USER, UserRoles.ADMIN, UserRoles.SUPERADMIN),
-//   StylesController.getAllStyles
-// );
-// router.post(
-//   '/factory-style-assign',
-//   auth(UserRoles.USER, UserRoles.ADMIN, UserRoles.SUPERADMIN),
-//   validateRequest(StylesValidation.factoryStyleAssign),
-//   StylesController.factoryStyleAssign
-// );
-// router.get(
-//   '/get-all-style-no',
-//   auth(UserRoles.USER, UserRoles.ADMIN, UserRoles.SUPERADMIN),
-//   StylesController.getAllStyleNumbers
-// );
+router.get(
+  '/',
+  auth(userRole.USER, userRole.ADMIN, userRole.SUPER_ADMIN),
+  ProductsController.getAllProducts
+);
 
-// router.get(
-//   '/:styleNo',
-//   auth(UserRoles.USER, UserRoles.ADMIN, UserRoles.SUPERADMIN),
-//   StylesController.getSingleStyle
-// );
-// router.patch(
-//   '/:styleNo',
-//   validateRequest(StylesValidation.updateStyle),
-//   auth(UserRoles.USER, UserRoles.ADMIN, UserRoles.SUPERADMIN),
-//   StylesController.updateStyleInformation
-// );
+router.get(
+  '/:productId',
+  auth(userRole.USER, userRole.ADMIN, userRole.SUPER_ADMIN),
+  ProductsController.getSingleProduct
+);
 
-export const StyleRoutes = router;
+router.patch(
+  '/:productId',
+  auth(userRole.ADMIN, userRole.SUPER_ADMIN),
+  ProductsController.updateProduct
+);
+
+router.delete(
+  '/:productId',
+  auth(userRole.ADMIN, userRole.SUPER_ADMIN),
+  ProductsController.singleProductDelete
+);
+
+export const ProductsRoutes = router;

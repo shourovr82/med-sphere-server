@@ -1,61 +1,78 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
+import { Prisma, Product } from '@prisma/client';
+import { Request } from 'express';
 import httpStatus from 'http-status';
 import ApiError from '../../../errors/ApiError';
-
+import { FileUploadHelper } from '../../../helpers/FileUploadHelper';
+import { paginationHelpers } from '../../../helpers/paginationHelper';
+import { IGenericResponse } from '../../../interfaces/common';
+import { IUploadFile } from '../../../interfaces/file';
+import { IPaginationOptions } from '../../../interfaces/pagination';
 import prisma from '../../../shared/prisma';
-
 import {
-  ICreateProductRequest,
-  IProductCreateRequest,
+  ProductSearchableFields,
+  productRelationalFields,
+  productRelationalFieldsMapper,
+  stylesRelationalFields,
+  stylesRelationalFieldsMapper,
+  stylesSearchableFields,
+} from './products.constants';
+import {
+
+  IProductCreateRequest, IProductFilterRequest, IUpdateProductRequest,
+ 
 } from './products.interface';
 
 // modules
 
+
 const createNewProduct = async (
   profileId: string,
-  data: IProductCreateRequest
-): Promise<ICreateProductRequest> => {
+  req: Request
+): Promise<Product> => {
+
+  const data = req.body as IProductCreateRequest;
+
   const result = await prisma.$transaction(async transactionClient => {
+   
+
     const newProductData = {
       productTitle: data.productTitle,
       productDescription: data.productDescription,
       productPrice: data.productPrice,
       productImage: data.productImage,
-      serviceId: data.serviceId,
       profileId,
+      serviceId: data.serviceId
     };
 
-    const createdProduct = await transactionClient.product.create({
-      data: newProductData,
-      select: {
-        createdAt: true,
-        productTitle: true,
-      },
+    const createdProduct= await transactionClient.product.create({
+      data: newProductData
     });
 
     return createdProduct;
   });
 
   if (!result) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'Product creation failed');
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Style creation failed');
   }
   return result;
 };
 
+
+
 const getAllProducts = async (
-  filters: IStylesFilterRequest,
+  filters: IProductFilterRequest,
   options: IPaginationOptions
-): Promise<IGenericResponse<Styles[]>> => {
+): Promise<IGenericResponse<Product[]>> => {
   const { limit, page, skip } = paginationHelpers.calculatePagination(options);
 
-  const { searchTerm, startDate, endDate, ...filterData } = filters;
+  const { searchTerm, productPrice, ...filterData } = filters;
 
   const andConditions = [];
 
   if (searchTerm) {
     andConditions.push({
-      OR: stylesSearchableFields.map((field: any) => ({
+      OR: ProductSearchableFields.map((field: any) => ({
         [field]: {
           contains: searchTerm,
           mode: 'insensitive',
@@ -63,22 +80,23 @@ const getAllProducts = async (
       })),
     });
   }
-  // Add date range condition if both startDate and endDate are provided
-  if (startDate && endDate) {
+
+  
+  if (productPrice) {
     andConditions.push({
-      createdAt: {
-        gte: startDate, // Greater than or equal to startDate
-        lte: endDate, // Less than or equal to endDate
+      productPrice: {
+        equals: Number(productPrice),
       },
     });
   }
 
+
   if (Object.keys(filterData).length > 0) {
     andConditions.push({
       AND: Object.keys(filterData).map(key => {
-        if (stylesRelationalFields.includes(key)) {
+        if (productRelationalFields.includes(key)) {
           return {
-            [stylesRelationalFieldsMapper[key]]: {
+            [productRelationalFieldsMapper[key]]: {
               id: (filterData as any)[key],
             },
           };
@@ -93,51 +111,10 @@ const getAllProducts = async (
     });
   }
 
-  const whereConditions: Prisma.StylesWhereInput =
+  const whereConditions: Prisma.ProductWhereInput =
     andConditions.length > 0 ? { AND: andConditions } : {};
 
-  const result = await prisma.styles.findMany({
-    include: {
-      profile: true,
-      orders: true,
-      factory: true,
-      BulkProductionStatus: {
-        orderBy: {
-          createdAt: 'desc',
-        },
-        include: {
-          profile: true,
-        },
-      },
-      PPStrikeOffStatus: {
-        orderBy: {
-          createdAt: 'desc',
-        },
-        include: {
-          profile: {
-            select: {
-              firstName: true,
-              lastName: true,
-              profileId: true,
-              profileImage: true,
-              role: true,
-            },
-          },
-        },
-      },
-      ldCpAopStatus: {
-        include: {
-          profile: true,
-        },
-        orderBy: {
-          createdAt: 'desc',
-        },
-      },
-      PPSubmission: true,
-      tackPack: true,
-      couriers: true,
-      item: true,
-    },
+  const result = await prisma.product.findMany({
     where: whereConditions,
     skip,
     take: limit,
@@ -148,7 +125,7 @@ const getAllProducts = async (
             createdAt: 'desc',
           },
   });
-  const total = await prisma.styles.count({
+  const total = await prisma.product.count({
     where: whereConditions,
   });
   const totalPage = Math.ceil(total / limit);
@@ -163,102 +140,93 @@ const getAllProducts = async (
   };
 };
 
-const getSingleProduct = async (styleNo: string): Promise<Styles | null> => {
-  //
 
-  const result = await prisma.styles.findUnique({
+
+const getSingleProduct = async (productId: string): Promise<Product | null> => {
+
+  const result = await prisma.product.findUnique({
     where: {
-      styleNo,
-    },
-    include: {
-      profile: true,
-      orders: true,
-      BulkProductionStatus: {
-        include: {
-          profile: true,
-        },
-      },
-      PPStrikeOffStatus: {
-        include: {
-          profile: true,
-        },
-      },
-      couriers: true,
-      factory: true,
-      item: true,
-      ldCpAopStatus: true,
-      PPSubmission: true,
-      tackPack: true,
+      productId
     },
   });
+
+
   if (!result) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Style Not Found !!!');
+    throw new ApiError(httpStatus.NOT_FOUND, 'Product Not Found !!!');
   }
   return result;
 };
 
-// ! update style ----------------------
+// ! update Service ----------------------
 const updateProduct = async (
-  styleNo: string,
-  payload: Partial<IUpdateStyleRequest>
-): Promise<Styles | null> => {
-  const isExistStyle = await prisma.styles.findUnique({
+  productId: string,
+  payload: Partial<IUpdateProductRequest>
+): Promise<Product | null> => {
+
+
+  const isExistProduct = await prisma.product.findUnique({
     where: {
-      styleNo,
+      productId,
     },
   });
-  if (!isExistStyle) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Style Not Found !!!');
+
+  if (!isExistProduct) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Product Not Found !!!');
   }
 
-  if (payload?.factoryId) {
-    const isFactoryExist = await prisma.factory.findUnique({
-      where: {
-        factoryId: payload?.factoryId,
-      },
-    });
-    if (!isFactoryExist) {
-      throw new ApiError(httpStatus.NOT_FOUND, 'Factory Not Found !!!');
-    }
-  }
-  if (payload?.itemId) {
-    const isExistItem = await prisma.item.findUnique({
-      where: {
-        itemId: payload?.itemId,
-      },
-    });
-
-    if (!isExistItem) {
-      throw new ApiError(httpStatus.BAD_REQUEST, 'Item Not Found');
-    }
-    if (isExistItem) {
-      payload.itemId = isExistItem.itemId;
-    }
-  }
-
-  const updateStyleData = {
-    itemId: payload?.itemId,
-    image: payload?.image,
-    fabric: payload?.fabric,
-    isActiveStyle: payload?.isActiveStyle,
-    factoryId: payload?.factoryId,
+  const updateProductData = {
+    productTitle: payload?.productTitle,
+    productDescription: payload?.productDescription,
+    productPrice: payload?.productPrice,
+    productImage: payload?.productImage,
+    serviceId: payload?.serviceId
   };
 
-  const result = await prisma.styles.update({
+  const result = await prisma.product.update({
     where: {
-      styleNo,
+      productId,
     },
-    data: updateStyleData,
-    include: {
-      factory: true,
-    },
+    data: updateProductData,
   });
   if (!result) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'Style Updating Failed !!!');
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Product Updating Failed !!!');
   }
   return result;
 };
 
-export const StylesService = {
+
+
+
+const singleDeleteProduct = async (productId: string): Promise<Product | null> => {
+
+  const isExistProduct = await prisma.product.findUnique({
+    where: {
+      productId,
+    },
+  })
+
+  if (!isExistProduct) { 
+    throw new ApiError(httpStatus.NOT_FOUND, 'Product Not Found');
+  }
+
+  const result = await prisma.product.delete({
+    where: {
+      productId,
+    },
+  });
+
+  if (!result) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Product Not Deleted');
+  }
+
+  return result;
+};
+
+
+export const ProductsService = {
   createNewProduct,
+  getAllProducts,
+  getSingleProduct,
+  updateProduct,
+  singleDeleteProduct
 };

@@ -1,24 +1,14 @@
-export const stylesFilterableFields: string[] = [
-  'orderNo',
+export const ProductFilterableFields: string[] = [
+  'productPrice',
   'searchTerm',
-  'factoryId',
-  'styleNo',
-  'profileId',
-  'itemId',
-  'createdAt',
-  'startDate',
-  'endDate',
+  'productTitle',
 ];
 
-export const stylesSearchableFields: string[] = [
-  'styleNo',
-  'factoryId',
-  'styleNo',
-  'profileId',
-  'itemId',
+export const ProductSearchableFields: string[] = [
+  'productTitle',
 ];
 
-export const stylesRelationalFields: string[] = ['profileId'];
-export const stylesRelationalFieldsMapper: { [key: string]: string } = {
+export const productRelationalFields: string[] = ['profileId'];
+export const productRelationalFieldsMapper: { [key: string]: string } = {
   profileId: 'profileId',
 };

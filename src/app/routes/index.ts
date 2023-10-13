@@ -11,6 +11,7 @@ import { ReviewAndRatingRoutes } from '../modules/reviewAndRatings/reviewAndRati
 import { FeedBackRoutes } from '../modules/feedBackForms/feedBackForm.routes';
 import { AppointmentBookingRoutes } from '../modules/appointmentBooking/appointmentBooking.routes';
 import { FaqRoutes } from '../modules/FAQ/faq.routes';
+import { ProductsRoutes } from '../modules/products/products.routes';
 // import { AuthRoutes } from '../modules/auth/auth.routes';
 
 const router = express.Router();
@@ -59,6 +60,10 @@ const moduleRoutes = [
   {
     path: '/faqs',
     route: FaqRoutes,
+  },
+  {
+    path: '/products',
+    route: ProductsRoutes,
   },
 ];
 

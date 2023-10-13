@@ -4,93 +4,85 @@ import catchAsync from '../../../shared/catchAsync';
 import pick from '../../../shared/pick';
 import sendResponse from '../../../shared/sendResponse';
 import { IRequestUser } from '../users/user.interface';
-import { stylesFilterableFields } from './products.constants';
-import { StylesService } from './products.service';
+import { ProductsService } from './products.service';
+import { ProductFilterableFields } from './products.constants';
 
-const createNewStyle = catchAsync(async (req: Request, res: Response) => {
+
+const createNewProduct = catchAsync(async (req: Request, res: Response) => {
   const profileId = (req.user as IRequestUser).profileId;
-  const result = await StylesService.createNewStyle(profileId, req);
+  const result = await ProductsService.createNewProduct(profileId, req);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'style created Successfully',
+    message: 'Product created Successfully',
     data: result,
   });
 });
-const getAllStyles = catchAsync(async (req: Request, res: Response) => {
-  const filters = pick(req.query, stylesFilterableFields);
+const getAllProducts = catchAsync(async (req: Request, res: Response) => {
+  const filters = pick(req.query,ProductFilterableFields);
   const options = pick(req.query, ['limit', 'page', 'sortBy', 'sortOrder']);
 
-  const result = await StylesService.getAllStyles(filters, options);
+  const result = await ProductsService.getAllProducts(filters, options);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'styles fetched successfully',
+    message: 'Products fetched successfully',
     meta: result.meta,
     data: result.data,
   });
 });
-const getAllStyleNumbers = catchAsync(async (req: Request, res: Response) => {
-  const filters = pick(req.query, stylesFilterableFields);
-  const options = pick(req.query, ['limit', 'page', 'sortBy', 'sortOrder']);
 
-  const result = await StylesService.getAllStyleNumbers(filters, options);
 
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: 'styles fetched successfully',
-    meta: result.meta,
-    data: result.data,
-  });
-});
-const getSingleStyle = catchAsync(async (req: Request, res: Response) => {
-  const { styleNo } = req.params;
-  const result = await StylesService.getSingleStyle(styleNo);
+const getSingleProduct = catchAsync(async (req: Request, res: Response) => {
+  const { productId } = req.params;
+  const result = await ProductsService.getSingleProduct(productId);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'style retrieved successfully',
+    message: 'Product retrieved successfully',
     data: result,
   });
 });
-const updateStyleInformation = catchAsync(
+
+const updateProduct = catchAsync(
   async (req: Request, res: Response) => {
-    const { styleNo } = req.params;
-    const result = await StylesService.updateStyleInformation(
-      styleNo,
+    const { productId } = req.params;
+    const result = await ProductsService.updateProduct(
+      productId,
       req.body
     );
 
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
-      message: 'style retrieved successfully',
+      message: 'Product retrieved successfully',
       data: result,
     });
   }
 );
 
-// factory style assign
-const factoryStyleAssign = catchAsync(async (req: Request, res: Response) => {
-  const result = await StylesService.factoryStyleAssign(req.body);
+
+const singleProductDelete = catchAsync(async (req: Request, res: Response) => {
+  const { productId } = req.params;
+  const result = await ProductsService.singleDeleteProduct(productId);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'style created Successfully',
+    message: 'Product Deleted successfully',
     data: result,
   });
 });
 
-export const StylesController = {
-  createNewStyle,
-  getAllStyles,
-  getSingleStyle,
-  updateStyleInformation,
-  getAllStyleNumbers,
-  factoryStyleAssign,
+
+
+export const ProductsController = {
+  createNewProduct,
+  getAllProducts,
+  getSingleProduct,
+  updateProduct,
+  singleProductDelete
 };
