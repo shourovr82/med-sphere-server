@@ -1,14 +1,11 @@
 /* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import bcrypt from 'bcrypt';
-import { Request } from 'express';
 import httpStatus from 'http-status';
 import { Secret } from 'jsonwebtoken';
 import config from '../../../config';
 import ApiError from '../../../errors/ApiError';
-import { FileUploadHelper } from '../../../helpers/FileUploadHelper';
 import { jwtHelpers } from '../../../helpers/jwtHelpers';
-import { IUploadFile } from '../../../interfaces/file';
 import prisma from '../../../shared/prisma';
 import {
   ILoginUserResponse,
@@ -19,16 +16,7 @@ import {
 import { userRole } from '@prisma/client';
 
 // ! user create
-const createNewUser = async (req: Request) => {
-  const file = req.file as IUploadFile;
-
-  const uploadedImage = await FileUploadHelper.uploadImageToCloudinary(file);
-
-  if (uploadedImage) {
-    req.body.profileImage = uploadedImage.secure_url;
-  }
-  const data = (await req.body) as IUserCreate;
-
+const createNewUser = async (data: IUserCreate) => {
   const { password, email } = data;
 
   const hashedPassword = await bcrypt.hash(
@@ -64,8 +52,6 @@ const createNewUser = async (req: Request) => {
     });
 
     if (createdProfile.role == userRole.DOCTOR) {
-      console.log('sahfin', data);
-
       await transactionClient.doctor.create({
         data: {
           qualification: data.qualification,

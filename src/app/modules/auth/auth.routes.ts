@@ -1,5 +1,4 @@
-import express, { NextFunction, Request, Response } from 'express';
-import { FileUploadHelper } from '../../../helpers/FileUploadHelper';
+import express from 'express';
 import { UserValidation } from '../users/user.validations';
 import { AuthController } from './auth.controller';
 
@@ -9,12 +8,8 @@ const router = express.Router();
 
 router.post(
   '/create-user',
-  FileUploadHelper.upload.single('file'),
-  (req: Request, res: Response, next: NextFunction) => {
-    console.log(req.body);
-    req.body = UserValidation.createUser.parse(JSON.parse(req.body.data));
-    return AuthController.createNewUser(req, res, next);
-  }
+  validateRequest(UserValidation.createUser),
+  AuthController.createNewUser
 );
 
 router.post(
@@ -23,6 +18,10 @@ router.post(
   AuthController.userLogin
 );
 
-router.post('/refresh-token', AuthController.refreshToken);
+router.post(
+  '/refresh-token',
+
+  AuthController.refreshToken
+);
 
 export const AuthRoutes = router;

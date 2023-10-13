@@ -27,6 +27,9 @@ const getAllUserService = async (options: IPaginationOptions) => {
       createdAt: true,
       profile: true,
     },
+    orderBy: {
+      createdAt: 'desc',
+    },
   });
   const total = await prisma.user.count();
 
@@ -65,6 +68,7 @@ const getSingleUser = async (
     where: {
       profileId: existingUser.profileId!,
     },
+
     select: {
       userId: true,
       email: true,
