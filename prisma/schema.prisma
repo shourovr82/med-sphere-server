@@ -88,7 +88,6 @@ model Category {
   description  String
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
-  // relations
   services     Service[]
 
   @@map("categories")
@@ -103,7 +102,6 @@ model ReviewAndRatings {
   // relations
   profileId     String
   profile       Profile  @relation(fields: [profileId], references: [profileId])
-  // 
   serviceId     String
   service       Service  @relation(fields: [serviceId], references: [serviceId])
 
@@ -126,15 +124,13 @@ model Blog {
 }
 
 model Faq {
-  blogId          String   @id @default(uuid())
-  blogTitle       String
-  blogDescription String
-  blogImage       String
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  // 
-  profilId        String
-  profile         Profile  @relation(fields: [profilId], references: [profileId])
+  faqId          String   @id @default(uuid())
+  faqTitle       String
+  faqDescription String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  profileId      String
+  profile        Profile  @relation(fields: [profileId], references: [profileId])
 
   // relations
   @@map("faqs")
