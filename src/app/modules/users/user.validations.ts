@@ -20,10 +20,12 @@ const createUser = z.object({
       required_error: 'password is required',
       invalid_type_error: 'password must be in string',
     }),
-    profileImage: z.string({
-      required_error: 'Profile Image is required',
-      invalid_type_error: 'Profile Image must be in string',
-    }),
+    profileImage: z
+      .string({
+        required_error: 'Profile Image is required',
+        invalid_type_error: 'Profile Image must be in string',
+      })
+      .optional(),
     qualification: z
       .string({
         invalid_type_error: 'Qualification must be in string',

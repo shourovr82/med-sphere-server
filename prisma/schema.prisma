@@ -27,8 +27,8 @@ model Profile {
   profileId          String               @id @default(uuid())
   firstName          String
   lastName           String
-  profileImage       String
-  role               userRole
+  profileImage       String?
+  role               userRole             @default(USER)
   contactNumber      String?
   address            String?
   coverPhoto         String?

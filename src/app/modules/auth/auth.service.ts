@@ -106,6 +106,7 @@ const userLogin = async (
     select: {
       userId: true,
       password: true,
+      email: true,
       profile: {
         select: {
           role: true,
@@ -127,12 +128,14 @@ const userLogin = async (
 
   type TokenData = {
     userId: string;
+    email: string;
     role: userRole;
     profileId: string;
   };
 
   const tokenData: TokenData = {
     userId: isUserExist.userId,
+    email: isUserExist.email,
     role: isUserExist?.profile?.role!,
     profileId: isUserExist.profile?.profileId!,
   };
@@ -159,8 +162,6 @@ const refreshToken = async (token: string): Promise<IRefreshTokenResponse> => {
   // ! verify token
   let verifiedToken = null;
 
-  console.log(token, 'shafin=========');
-
   try {
     verifiedToken = jwtHelpers.verifyToken(
       token,
@@ -180,6 +181,7 @@ const refreshToken = async (token: string): Promise<IRefreshTokenResponse> => {
     },
     select: {
       userId: true,
+      email: true,
       password: true,
       profile: {
         select: {
@@ -195,12 +197,14 @@ const refreshToken = async (token: string): Promise<IRefreshTokenResponse> => {
 
   type TokenData = {
     userId: string;
+    email: string;
     role: userRole;
     profileId: string;
   };
 
   const tokenData: TokenData = {
     userId: isUserExist.userId,
+    email: isUserExist.email,
     role: isUserExist?.profile?.role!,
     profileId: isUserExist?.profile?.profileId!,
   };
