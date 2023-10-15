@@ -6,7 +6,9 @@ import httpStatus from 'http-status';
 import {
   ICreateReviewAndRatingReq,
   ICreateReviewAndRatingResponse,
+  IUpdateReviewRequest,
 } from './reviewAndRating.interface';
+import { ReviewAndRatings } from '@prisma/client';
 
 // ! Review and Rating create
 const createNewRatingAndReview = async (
@@ -47,6 +49,72 @@ const createNewRatingAndReview = async (
   return createdNewRatingAndReview;
 };
 
+// ! update Service ----------------------
+const updateRatingAndReview = async (
+  reviewId: string,
+  payload: Partial<IUpdateReviewRequest>
+): Promise<ReviewAndRatings | null> => {
+  const isExistReview = await prisma.reviewAndRatings.findUnique({
+    where: {
+      reviewId,
+    },
+  });
+
+  if (!isExistReview) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Review Not Found !!!');
+  }
+
+  const updateReview = {
+    reviewComment: payload?.reviewComment,
+    reviewRating: payload?.reviewRating,
+  };
+
+  const result = await prisma.reviewAndRatings.update({
+    where: {
+      reviewId,
+    },
+    data: updateReview,
+  });
+  if (!result) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Review sUpdating Failed !!!');
+  }
+  return result;
+};
+
+// ! delete Review s----------------------
+
+const SingleRatingAndReviewDelete = async (
+  reviewId: string
+): Promise<ReviewAndRatings | null> => {
+  const result = await prisma.$transaction(async transactionClient => {
+    const isExistFeedBack = await transactionClient.reviewAndRatings.findUnique(
+      {
+        where: {
+          reviewId,
+        },
+      }
+    );
+
+    if (!isExistFeedBack) {
+      throw new ApiError(httpStatus.NOT_FOUND, 'Review Not Found');
+    }
+
+    const feedBackDeleted = await transactionClient.reviewAndRatings.delete({
+      where: {
+        reviewId,
+      },
+    });
+
+    return feedBackDeleted;
+  });
+  if (!result) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Review Not Deleted');
+  }
+  return result;
+};
+
 export const RatingAndReviewService = {
   createNewRatingAndReview,
+  updateRatingAndReview,
+  SingleRatingAndReviewDelete,
 };

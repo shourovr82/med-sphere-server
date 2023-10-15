@@ -1,33 +1,32 @@
-import express, { NextFunction, Request, Response } from 'express';
+import express from 'express';
 
-import { FileUploadHelper } from '../../../helpers/FileUploadHelper';
 import auth from '../../middlewares/auth';
 import { MedServiceController } from './service.controller';
-import { MedServiceValidation } from './service.validation';
+// import { MedServiceValidation } from './service.validation';
 import { userRole } from '@prisma/client';
 
 const router = express.Router();
 
 router.post(
   '/create-service',
-  auth(userRole.ADMIN),
-  FileUploadHelper.upload.single('file'),
-  (req: Request, res: Response, next: NextFunction) => {
-    req.body = MedServiceValidation.createService.parse(
-      JSON.parse(req.body.data)
-    );
-    return MedServiceController.createNewService(req, res, next);
-  }
+  auth(userRole.ADMIN, userRole.SUPER_ADMIN),
+  MedServiceController.createNewService
 );
-router.get(
-  '/',
-  auth(userRole.USER, userRole.ADMIN, userRole.SUPER_ADMIN, userRole.DOCTOR),
-  MedServiceController.getAllServices
-);
-router.get(
+
+router.get('/', MedServiceController.getAllServices);
+
+router.get('/:serviceId', MedServiceController.getSingleService);
+
+router.patch(
   '/:serviceId',
-  auth(userRole.USER, userRole.ADMIN, userRole.SUPER_ADMIN, userRole.DOCTOR),
-  MedServiceController.getSingleService
+  auth(userRole.ADMIN, userRole.SUPER_ADMIN),
+  MedServiceController.updateService
+);
+
+router.delete(
+  '/:serviceId',
+  auth(userRole.ADMIN, userRole.SUPER_ADMIN),
+  MedServiceController.SingleServiceDelete
 );
 
 export const MedServiceRoutes = router;

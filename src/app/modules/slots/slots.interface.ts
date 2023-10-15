@@ -8,3 +8,8 @@ export type ICreateSlotResponse = {
   endTime: Date;
   createdAt: Date;
 };
+
+export type IUpdateSlotRequest = {
+  startTime?: Date;
+  endTime?: Date;
+};

@@ -17,15 +17,7 @@ router.post(
     return BlogsController.createNewStyle(req, res, next);
   }
 );
-router.get(
-  '/',
-  auth(userRole.USER, userRole.ADMIN, userRole.SUPER_ADMIN, userRole.DOCTOR),
-  BlogsController.getAllBlogs
-);
-router.get(
-  '/:blogId',
-  auth(userRole.USER, userRole.ADMIN, userRole.SUPER_ADMIN, userRole.DOCTOR),
-  BlogsController.getSingleBlog
-);
+router.get('/', BlogsController.getAllBlogs);
+router.get('/:blogId', BlogsController.getSingleBlog);
 
 export const BlogRoutes = router;

@@ -1,4 +1,4 @@
-import {  Service } from '@prisma/client';
+import { Service } from '@prisma/client';
 
 export type ICategoryFilterRequest = {
   searchTerm?: string | undefined;
@@ -14,19 +14,7 @@ export type ICategoryRequest = {
   services: Service[];
 };
 
-// export type IUpdateStyleRequest = {
-//   image?: string;
-//   fabric?: string;
-//   isActiveStyle?: boolean;
-//   factoryId?: string;
-//   itemId?: string;
-// };
-
-export type IUpdateStyleRequest = {
-  image?: string;
-  fabric?: string;
-  isActiveStyle?: boolean;
-  factoryId?: string;
-  itemId?: string;
+export type IUpdateCategoryRequest = {
+  categoryName?: string;
+  description?: string;
 };
-

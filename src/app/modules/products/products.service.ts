@@ -3,50 +3,43 @@ import { Prisma, Product } from '@prisma/client';
 import { Request } from 'express';
 import httpStatus from 'http-status';
 import ApiError from '../../../errors/ApiError';
-import { FileUploadHelper } from '../../../helpers/FileUploadHelper';
+
 import { paginationHelpers } from '../../../helpers/paginationHelper';
 import { IGenericResponse } from '../../../interfaces/common';
-import { IUploadFile } from '../../../interfaces/file';
+
 import { IPaginationOptions } from '../../../interfaces/pagination';
 import prisma from '../../../shared/prisma';
 import {
   ProductSearchableFields,
   productRelationalFields,
   productRelationalFieldsMapper,
-  stylesRelationalFields,
-  stylesRelationalFieldsMapper,
-  stylesSearchableFields,
 } from './products.constants';
 import {
-
-  IProductCreateRequest, IProductFilterRequest, IUpdateProductRequest,
- 
+  IProductCreateRequest,
+  IProductFilterRequest,
+  IUpdateProductRequest,
 } from './products.interface';
 
 // modules
-
 
 const createNewProduct = async (
   profileId: string,
   req: Request
 ): Promise<Product> => {
-
   const data = req.body as IProductCreateRequest;
 
   const result = await prisma.$transaction(async transactionClient => {
-   
-
     const newProductData = {
       productTitle: data.productTitle,
       productDescription: data.productDescription,
       productPrice: data.productPrice,
       productImage: data.productImage,
       profileId,
-      serviceId: data.serviceId
+      serviceId: data.serviceId,
     };
 
-    const createdProduct= await transactionClient.product.create({
-      data: newProductData
+    const createdProduct = await transactionClient.product.create({
+      data: newProductData,
     });
 
     return createdProduct;
@@ -57,8 +50,6 @@ const createNewProduct = async (
   }
   return result;
 };
-
-
 
 const getAllProducts = async (
   filters: IProductFilterRequest,
@@ -81,7 +72,6 @@ const getAllProducts = async (
     });
   }
 
-  
   if (productPrice) {
     andConditions.push({
       productPrice: {
@@ -89,7 +79,6 @@ const getAllProducts = async (
       },
     });
   }
-
 
   if (Object.keys(filterData).length > 0) {
     andConditions.push({
@@ -118,6 +107,15 @@ const getAllProducts = async (
     where: whereConditions,
     skip,
     take: limit,
+    include: {
+      service: {
+        select: {
+          serviceId: true,
+          serviceName: true,
+          serviceImage: true,
+        },
+      },
+    },
     orderBy:
       options.sortBy && options.sortOrder
         ? { [options.sortBy]: options.sortOrder }
@@ -140,16 +138,15 @@ const getAllProducts = async (
   };
 };
 
-
-
 const getSingleProduct = async (productId: string): Promise<Product | null> => {
-
   const result = await prisma.product.findUnique({
     where: {
-      productId
+      productId,
+    },
+    include: {
+      service: true,
     },
   });
-
 
   if (!result) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Product Not Found !!!');
@@ -162,8 +159,6 @@ const updateProduct = async (
   productId: string,
   payload: Partial<IUpdateProductRequest>
 ): Promise<Product | null> => {
-
-
   const isExistProduct = await prisma.product.findUnique({
     where: {
       productId,
@@ -179,7 +174,7 @@ const updateProduct = async (
     productDescription: payload?.productDescription,
     productPrice: payload?.productPrice,
     productImage: payload?.productImage,
-    serviceId: payload?.serviceId
+    serviceId: payload?.serviceId,
   };
 
   const result = await prisma.product.update({
@@ -194,18 +189,16 @@ const updateProduct = async (
   return result;
 };
 
-
-
-
-const singleDeleteProduct = async (productId: string): Promise<Product | null> => {
-
+const singleDeleteProduct = async (
+  productId: string
+): Promise<Product | null> => {
   const isExistProduct = await prisma.product.findUnique({
     where: {
       productId,
     },
-  })
+  });
 
-  if (!isExistProduct) { 
+  if (!isExistProduct) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Product Not Found');
   }
 
@@ -222,11 +215,10 @@ const singleDeleteProduct = async (productId: string): Promise<Product | null> =
   return result;
 };
 
-
 export const ProductsService = {
   createNewProduct,
   getAllProducts,
   getSingleProduct,
   updateProduct,
-  singleDeleteProduct
+  singleDeleteProduct,
 };

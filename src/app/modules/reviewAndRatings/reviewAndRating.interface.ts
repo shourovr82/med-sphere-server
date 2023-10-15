@@ -8,3 +8,8 @@ export type ICreateReviewAndRatingResponse = {
   reviewRating: string;
   createdAt: Date;
 };
+
+export type IUpdateReviewRequest = {
+  reviewComment?: string;
+  reviewRating?: string;
+};

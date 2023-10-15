@@ -22,6 +22,36 @@ const createNewSlot = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-export const SlotController = {
+const updateReview = catchAsync(async (req: Request, res: Response) => {
+  const { reviewId } = req.params;
+  const result = await RatingAndReviewService.updateRatingAndReview(
+    reviewId,
+    req.body
+  );
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Feedback Updated successfully',
+    data: result,
+  });
+});
+
+const singleReviewDelete = catchAsync(async (req: Request, res: Response) => {
+  const { reviewId } = req.params;
+  const result = await RatingAndReviewService.SingleRatingAndReviewDelete(
+    reviewId
+  );
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: ` ${result?.reviewComment} Deleted successfully`,
+  });
+});
+
+export const ReviewController = {
   createNewSlot,
+  updateReview,
+  singleReviewDelete,
 };

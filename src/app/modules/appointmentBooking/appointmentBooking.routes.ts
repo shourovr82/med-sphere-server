@@ -14,5 +14,24 @@ router.post(
   validateRequest(AppointmentBookingValidation.createAppointmentBooking),
   AppointmentBookingController.createNewAppointmentBooking
 );
+router.get(
+  '/',
+  auth(userRole.USER, userRole.ADMIN, userRole.SUPER_ADMIN),
+  // validateRequest(AppointmentBookingValidation.createAppointmentBooking),
+  AppointmentBookingController.getAllAppointment
+);
+
+router.patch(
+  '/:appointmentId',
+  auth(userRole.USER, userRole.ADMIN, userRole.SUPER_ADMIN),
+  // validateRequest(AppointmentBookingValidation.createAppointmentBooking),
+  AppointmentBookingController.updateAppointment
+);
+
+router.delete(
+  '/:appointmentId',
+  auth(userRole.USER, userRole.ADMIN, userRole.SUPER_ADMIN),
+  AppointmentBookingController.deleteAppointment
+);
 
 export const AppointmentBookingRoutes = router;

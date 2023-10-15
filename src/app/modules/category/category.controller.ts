@@ -4,7 +4,7 @@ import catchAsync from '../../../shared/catchAsync';
 import pick from '../../../shared/pick';
 import sendResponse from '../../../shared/sendResponse';
 import { IRequestUser } from '../users/user.interface';
-import { stylesFilterableFields } from './category.constants';
+import { categoryFilterableFields } from './category.constants';
 import { CategoryService } from './category.service';
 
 const createCategory = catchAsync(async (req: Request, res: Response) => {
@@ -17,12 +17,10 @@ const createCategory = catchAsync(async (req: Request, res: Response) => {
     message: 'Category created Successfully',
     data: result,
   });
-
 });
 
-
-const getAllCategory= catchAsync(async (req: Request, res: Response) => {
-  const filters = pick(req.query, stylesFilterableFields);
+const getAllCategory = catchAsync(async (req: Request, res: Response) => {
+  const filters = pick(req.query, categoryFilterableFields);
   const options = pick(req.query, ['limit', 'page', 'sortBy', 'sortOrder']);
 
   const result = await CategoryService.getAllCategory(filters, options);
@@ -36,8 +34,32 @@ const getAllCategory= catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const updateCategory = catchAsync(async (req: Request, res: Response) => {
+  const { categoryId } = req.params;
+  const result = await CategoryService.updateCategory(categoryId, req.body);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Category Updated successfully',
+    data: result,
+  });
+});
+
+const singleCategoryDelete = catchAsync(async (req: Request, res: Response) => {
+  const { categoryId } = req.params;
+  const result = await CategoryService.singleDeleteCategory(categoryId);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: `${result?.categoryName} Deleted successfully `,
+  });
+});
 
 export const CategoryController = {
   createCategory,
-  getAllCategory
+  getAllCategory,
+  updateCategory,
+  singleCategoryDelete,
 };

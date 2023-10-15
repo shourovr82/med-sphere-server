@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Category, Prisma, Specialization } from '@prisma/client';
+import { Category, Prisma } from '@prisma/client';
 import { Request } from 'express';
 import httpStatus from 'http-status';
 import ApiError from '../../../errors/ApiError';
@@ -11,14 +11,11 @@ import {
   categoryFields,
   categoryRelationalFieldsMapper,
   categorySearchableFields,
-  specializationFields,
-  specializationRelationalFieldsMapper,
-  specializationSearchableFields,
 } from './category.constants';
 import {
   ICategoryFilterRequest,
   ICategoryRequest,
-  ISpecializationFilterRequest,
+  IUpdateCategoryRequest,
 } from './category.interface';
 
 // modules
@@ -27,13 +24,11 @@ const createCategory = async (
   profileId: string,
   req: Request
 ): Promise<Category> => {
- 
   const data = req.body as ICategoryRequest;
 
-  console.log("data",data);
+  console.log('data', data);
 
   const result = await prisma.$transaction(async transactionClient => {
-
     const newCategoryData = {
       categoryName: data.categoryName,
       description: data.description,
@@ -50,8 +45,6 @@ const createCategory = async (
   }
   return result;
 };
-
-
 
 const getAllCategory = async (
   filters: ICategoryFilterRequest,
@@ -123,9 +116,69 @@ const getAllCategory = async (
   };
 };
 
+// ! update Category ----------------------
+const updateCategory = async (
+  categoryId: string,
+  payload: Partial<IUpdateCategoryRequest>
+): Promise<Category | null> => {
+  const isExistCategory = await prisma.category.findUnique({
+    where: {
+      categoryId,
+    },
+  });
 
+  if (!isExistCategory) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Category Not Found !!!');
+  }
+
+  const updateCategoryData = {
+    categoryName: payload?.categoryName,
+    description: payload?.description,
+  };
+
+  const result = await prisma.category.update({
+    where: {
+      categoryId,
+    },
+    data: updateCategoryData,
+  });
+  if (!result) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Category Updating Failed !!!');
+  }
+  return result;
+};
+
+const singleDeleteCategory = async (
+  categoryId: string
+): Promise<Category | null> => {
+  const result = await prisma.$transaction(async transactionClient => {
+    const isExistCategory = await transactionClient.category.findUnique({
+      where: {
+        categoryId,
+      },
+    });
+
+    if (!isExistCategory) {
+      throw new ApiError(httpStatus.NOT_FOUND, 'Category Not Found');
+    }
+
+    const categoryDeleted = await transactionClient.category.delete({
+      where: {
+        categoryId,
+      },
+    });
+
+    return categoryDeleted;
+  });
+  if (!result) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Category Not Deleted');
+  }
+  return result;
+};
 
 export const CategoryService = {
   createCategory,
   getAllCategory,
+  updateCategory,
+  singleDeleteCategory,
 };

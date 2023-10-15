@@ -15,4 +15,22 @@ router.post(
   FeedBackController.createNewFeedBack
 );
 
+router.get(
+  '/',
+
+  FeedBackController.getAllFeedBack
+);
+
+router.patch(
+  '/:feedbackId',
+  auth(userRole.USER, userRole.ADMIN, userRole.SUPER_ADMIN, userRole.DOCTOR),
+  FeedBackController.updateFeedBack
+);
+
+router.delete(
+  '/:feedbackId',
+  auth(userRole.USER, userRole.ADMIN, userRole.SUPER_ADMIN, userRole.DOCTOR),
+  FeedBackController.singleFeedBackDelete
+);
+
 export const FeedBackRoutes = router;

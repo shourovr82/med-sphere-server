@@ -13,11 +13,8 @@ export type ISpecializationRequest = {
   updatedAt: string;
   doctors: Doctor[];
 };
-export type IUpdateStyleRequest = {
-  image?: string;
-  fabric?: string;
-  isActiveStyle?: boolean;
-  factoryId?: string;
-  itemId?: string;
+export type IUpdateSpecializationRequest = {
+  specializationName?: string;
+  description?: string;
+  createdAt: string;
 };
-
