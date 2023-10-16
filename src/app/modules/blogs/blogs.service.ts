@@ -1,14 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { Request } from 'express';
 import httpStatus from 'http-status';
 import ApiError from '../../../errors/ApiError';
-import { FileUploadHelper } from '../../../helpers/FileUploadHelper';
-import { IUploadFile } from '../../../interfaces/file';
+
 import prisma from '../../../shared/prisma';
 import {
   IBlogCreateRequest,
   IBlogFilterRequest,
+  IBlogUpdateRequest,
   ICreateNewBlogResponse,
 } from './blogs.interface';
 
@@ -26,16 +25,8 @@ import {
 
 const createNewBlog = async (
   profileId: string,
-  req: Request
+  data: IBlogCreateRequest
 ): Promise<ICreateNewBlogResponse> => {
-  const file = req.file as IUploadFile;
-  const uploadedImage = await FileUploadHelper.uploadImageToCloudinary(file);
-
-  if (uploadedImage) {
-    req.body.blogImage = uploadedImage.secure_url;
-  }
-  const data = req.body as IBlogCreateRequest;
-
   const result = await prisma.$transaction(async transactionClient => {
     const createdBlog = await transactionClient.blog.create({
       data: {
@@ -154,8 +145,69 @@ const getSingleBlog = async (blogId: string): Promise<Blog | null> => {
   return result;
 };
 
+// ! update Category ----------------------
+const updateBlog = async (
+  blogId: string,
+  payload: Partial<IBlogUpdateRequest>
+): Promise<Blog | null> => {
+  const isExist = await prisma.blog.findUnique({
+    where: {
+      blogId,
+    },
+  });
+
+  if (!isExist) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Blog Not Found !!!');
+  }
+
+  const updateData = {
+    blogTitle: payload?.blogTitle,
+    blogDescription: payload?.blogDescription,
+    blogImage: payload?.blogImage,
+  };
+
+  const result = await prisma.blog.update({
+    where: {
+      blogId,
+    },
+    data: updateData,
+  });
+  if (!result) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Blog Updating Failed !!!');
+  }
+  return result;
+};
+
+const deleteBlog = async (blogId: string): Promise<Blog | null> => {
+  const result = await prisma.$transaction(async transactionClient => {
+    const isExist = await transactionClient.blog.findUnique({
+      where: {
+        blogId,
+      },
+    });
+
+    if (!isExist) {
+      throw new ApiError(httpStatus.NOT_FOUND, 'Blog Not Found');
+    }
+
+    const blogDeleted = await transactionClient.blog.delete({
+      where: {
+        blogId,
+      },
+    });
+
+    return blogDeleted;
+  });
+  if (!result) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Blog Not Deleted');
+  }
+  return result;
+};
+
 export const BlogService = {
   createNewBlog,
   getAllBlogs,
   getSingleBlog,
+  deleteBlog,
+  updateBlog,
 };

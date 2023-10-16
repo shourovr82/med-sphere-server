@@ -8,6 +8,7 @@ import { IRequestUser } from '../users/user.interface';
 //! faq Create
 
 const createNewFaq = catchAsync(async (req: Request, res: Response) => {
+  console.log(req.body);
   const profileId = (req.user as IRequestUser).profileId;
   const result = await FaqService.createNewFaq(profileId, req.body);
 
@@ -43,7 +44,14 @@ const deleteFaq = catchAsync(async (req: Request, res: Response) => {
 });
 const updateFaqDetails = catchAsync(async (req: Request, res: Response) => {
   const { faqId } = req.params;
+  console.log(faqId);
+  console.log(req.params);
   const updatedData = req.body;
+  console.log(
+    '🚀 ~ file: faq.controller.ts:48 ~ updateFaqDetails ~ updatedData:',
+    updatedData
+  );
+
   const result = await FaqService.updateFaqDetails(faqId, updatedData);
 
   sendResponse(res, {

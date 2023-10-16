@@ -85,6 +85,8 @@ const updateFaqDetails = async (
     },
   });
 
+  console.log(existingFaq);
+
   if (!existingFaq) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Faq not found');
   }
