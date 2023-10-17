@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Category, Prisma } from '@prisma/client';
-import { Request } from 'express';
+
 import httpStatus from 'http-status';
 import ApiError from '../../../errors/ApiError';
 import { paginationHelpers } from '../../../helpers/paginationHelper';
@@ -20,14 +20,7 @@ import {
 
 // modules
 
-const createCategory = async (
-  profileId: string,
-  req: Request
-): Promise<Category> => {
-  const data = req.body as ICategoryRequest;
-
-  console.log('data', data);
-
+const createCategory = async (data: ICategoryRequest): Promise<Category> => {
   const result = await prisma.$transaction(async transactionClient => {
     const newCategoryData = {
       categoryName: data.categoryName,

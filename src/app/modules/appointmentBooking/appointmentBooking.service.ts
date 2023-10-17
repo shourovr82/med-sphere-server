@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
 
 import prisma from '../../../shared/prisma';
@@ -34,6 +35,7 @@ const createAppointmentBooking = async (
   if (!isExistingService) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Service not found');
   }
+
   const isExistingSlot = await prisma.timeSlot.findUnique({
     where: {
       slotId: payload.slotId,
@@ -42,6 +44,19 @@ const createAppointmentBooking = async (
 
   if (!isExistingSlot) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'slot not found');
+  }
+
+  const takenSlot = await prisma.appointmentBooking.findFirst({
+    where: {
+      slotId: payload.slotId,
+      appointmentDate: payload.appointmentDate,
+      serviceId: payload.serviceId,
+      OR: [{ appointmentStatus: 'pending' }, { appointmentStatus: 'approved' }],
+    },
+  });
+
+  if (takenSlot) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Slot already booked');
   }
 
   const createdBooking = await prisma.appointmentBooking.create({
@@ -72,7 +87,7 @@ const getAllAppointment = async (
 ): Promise<IGenericResponse<AppointmentBooking[]>> => {
   const { limit, page, skip } = paginationHelpers.calculatePagination(options);
 
-  const { searchTerm, ...filterData } = filters;
+  const { searchTerm, firstName, appointmentStatus, ...filterData } = filters;
 
   const andConditions = [];
 
@@ -84,6 +99,24 @@ const getAllAppointment = async (
           mode: 'insensitive',
         },
       })),
+    });
+  }
+
+  if (firstName) {
+    andConditions.push({
+      profile: {
+        firstName: {
+          contains: firstName,
+          mode: 'insensitive',
+        },
+      },
+    });
+  }
+
+  if (appointmentStatus) {
+    // Check if appointmentStatus is provided
+    andConditions.push({
+      appointmentStatus: { equals: appointmentStatus }, // Use the correct field name
     });
   }
 
@@ -107,10 +140,30 @@ const getAllAppointment = async (
     });
   }
 
+  //@ts-ignore
   const whereConditions: Prisma.AppointmentBookingWhereInput =
     andConditions.length > 0 ? { AND: andConditions } : {};
 
   const result = await prisma.appointmentBooking.findMany({
+    include: {
+      service: {
+        select: {
+          serviceName: true,
+        },
+      },
+      slot: {
+        select: {
+          slotTime: true,
+        },
+      },
+      profile: {
+        select: {
+          firstName: true,
+          lastName: true,
+          contactNumber: true,
+        },
+      },
+    },
     where: whereConditions,
     skip,
     take: limit,
@@ -153,12 +206,27 @@ const updateAppointment = async (
       'Appointment Booking Not Found !!!'
     );
   }
+  console.log(payload);
 
   const updateData = {
     serviceId: payload?.serviceId,
     appointmentDate: payload?.appointmentDate,
     slotId: payload?.slotId,
+    appointmentStatus: payload?.appointmentStatus,
   };
+
+  const takenSlot = await prisma.appointmentBooking.findFirst({
+    where: {
+      slotId: payload.slotId,
+      appointmentDate: payload.appointmentDate,
+      serviceId: payload.serviceId,
+      OR: [{ appointmentStatus: 'pending' }, { appointmentStatus: 'approved' }],
+    },
+  });
+
+  if (takenSlot) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Slot already booked');
+  }
 
   const result = await prisma.appointmentBooking.update({
     where: {
@@ -199,7 +267,6 @@ const deleteAppointment = async (
   }
   return result;
 };
-
 export const AppointmentBookingService = {
   createAppointmentBooking,
   getAllAppointment,

@@ -7,7 +7,7 @@ import pick from '../../../shared/pick';
 import { ServiceFilterableFields } from './service.constants';
 
 const createNewService = catchAsync(async (req: Request, res: Response) => {
-  const result = await MedService.createNewService(req);
+  const result = await MedService.createNewService(req.body);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,

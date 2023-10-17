@@ -1,9 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { Request } from 'express';
 import httpStatus from 'http-status';
 import ApiError from '../../../errors/ApiError';
-
 import prisma from '../../../shared/prisma';
 import {
   IServiceFilterRequest,
@@ -25,10 +23,8 @@ import {
 // modules
 
 const createNewService = async (
-  req: Request
+  data: IServiceCreateRequest
 ): Promise<ICreateNewServiceResponse> => {
-  const data = req.body as IServiceCreateRequest;
-
   const serviceData = {
     serviceName: data.serviceName,
     description: data.description,
@@ -36,7 +32,10 @@ const createNewService = async (
     location: data.location,
     categoryId: data.categoryId,
     servicePrice: data.servicePrice,
+    serviceStatus: data.serviceStatus,
   };
+
+  console.log(serviceData);
 
   const result = await prisma.$transaction(async transactionClient => {
     const isExistCategory = await transactionClient.category.findUnique({
@@ -47,9 +46,23 @@ const createNewService = async (
         categoryId: true,
       },
     });
-
     if (!isExistCategory) {
       throw new ApiError(httpStatus.BAD_REQUEST, 'Category is not exist');
+    }
+    const isExistServiceName = await transactionClient.service.findFirst({
+      where: {
+        serviceName: serviceData.serviceName,
+      },
+      select: {
+        serviceName: true,
+      },
+    });
+
+    if (isExistServiceName) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        'Service Name Already  exist, try different Name'
+      );
     }
 
     const createdService = await transactionClient.service.create({
@@ -184,6 +197,7 @@ const updateService = async (
     location: payload?.location,
     categoryId: payload?.categoryId,
     servicePrice: payload?.servicePrice,
+    serviceStatus: payload?.serviceStatus,
   };
 
   const result = await prisma.service.update({

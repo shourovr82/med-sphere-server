@@ -1,3 +1,6 @@
+import { serviceStatus } from '@prisma/client';
+
+/* eslint-disable no-unused-vars */
 export type IServiceCreateRequest = {
   serviceName: string;
   description: string;
@@ -5,6 +8,7 @@ export type IServiceCreateRequest = {
   location: string;
   categoryId: string;
   servicePrice: number;
+  serviceStatus: serviceStatus;
 };
 
 export type IServiceFilterRequest = {
@@ -20,6 +24,7 @@ export type IUpdateServiceRequest = {
   location?: string;
   categoryId?: string;
   servicePrice?: number;
+  serviceStatus?: serviceStatus;
 };
 
 export type ICreateNewServiceResponse = {

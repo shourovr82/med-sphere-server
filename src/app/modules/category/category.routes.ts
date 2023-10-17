@@ -9,7 +9,7 @@ import { CategoryController } from './category.controller';
 const router = express.Router();
 
 router.post(
-  '/',
+  '/create-category',
   auth(userRole.ADMIN, userRole.SUPER_ADMIN),
   CategoryController.createCategory
 );
@@ -21,7 +21,7 @@ router.get(
 );
 
 router.patch(
-  '/:categoryId',
+  '/update/:categoryId',
   auth(userRole.ADMIN, userRole.SUPER_ADMIN),
   CategoryController.updateCategory
 );
