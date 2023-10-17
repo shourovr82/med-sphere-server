@@ -45,7 +45,7 @@ const createUser = z.object({
   }),
 });
 
-const updateUser = z.object({
+const loginUser = z.object({
   body: z.object({
     email: z
       .string({ invalid_type_error: 'Email  must be valid in string' })
@@ -55,16 +55,26 @@ const updateUser = z.object({
       .optional(),
   }),
 });
-const loginUser = z.object({
+const updateUser = z.object({
   body: z.object({
-    email: z.string({
-      required_error: 'Email is Required for Login',
-      invalid_type_error: 'First Name must be in string',
-    }),
-    password: z.string({
-      required_error: 'Password is required for login',
-      invalid_type_error: 'Last Name must be in string',
-    }),
+    email: z
+      .string({
+        required_error: 'Email is Required ',
+        invalid_type_error: 'First Name must be in string',
+      })
+      .optional(),
+    oldPassword: z
+      .string({
+        required_error: 'Old Password is required ',
+        invalid_type_error: 'Last Name must be in string',
+      })
+      .optional(),
+    newPassword: z
+      .string({
+        required_error: 'New Password is required ',
+        invalid_type_error: 'Last Name must be in string',
+      })
+      .optional(),
   }),
 });
 

@@ -150,6 +150,8 @@ const updateBlog = async (
   blogId: string,
   payload: Partial<IBlogUpdateRequest>
 ): Promise<Blog | null> => {
+  console.log(payload);
+
   const isExist = await prisma.blog.findUnique({
     where: {
       blogId,

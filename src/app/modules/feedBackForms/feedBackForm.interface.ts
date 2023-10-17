@@ -1,20 +1,20 @@
 export type ICreateFeedBackFormReq = {
-  feedbackComment: string;
-  serviceId: string;
+  feedbackSubject: string;
+  feedbackDescription: string;
 };
 export type ICreateFeedBackFormResponse = {
-  feedbackComment: string;
+  feedbackSubject: string;
+  feedbackDescription: string;
   createdAt: Date;
 };
 
 export type IFeedBackFilterRequest = {
   searchTerm?: string | undefined;
-  feedbackComment?: string | undefined;
-  service?: string | undefined;
+  feedbackSubject?: string | undefined;
   profile?: string | undefined;
 };
 
 export type IUpdateFeedBackRequest = {
-  feedbackComment?: string;
-  serviceId?: string;
+  feedbackSubject?: string;
+  feedbackDescription?: string;
 };

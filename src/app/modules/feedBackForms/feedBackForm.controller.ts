@@ -58,7 +58,7 @@ const singleFeedBackDelete = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: ` ${result?.feedbackComment} Deleted successfully`,
+    message: ` ${result?.feedbackSubject} Deleted successfully`,
   });
 });
 

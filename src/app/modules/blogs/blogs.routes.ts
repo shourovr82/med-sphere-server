@@ -14,7 +14,6 @@ router.post(
   validateRequest(BlogValidation.createBlog),
   BlogsController.createNewBlog
 );
-router.get('/', BlogsController.getAllBlogs);
 router.get('/:blogId', BlogsController.getSingleBlog);
 
 router.get(
@@ -22,19 +21,14 @@ router.get(
   auth(userRole.USER, userRole.ADMIN, userRole.SUPER_ADMIN, userRole.DOCTOR),
   BlogsController.getAllBlogs
 );
-router.get(
-  '/:blogId',
-  auth(userRole.USER, userRole.ADMIN, userRole.SUPER_ADMIN, userRole.DOCTOR),
-  BlogsController.getSingleBlog
-);
 
 router.patch(
-  '/:blogId',
+  '/update/:blogId',
   auth(userRole.ADMIN, userRole.SUPER_ADMIN),
   BlogsController.updateBlog
 );
 router.delete(
-  '/:blogId',
+  '/delete/:blogId',
   auth(userRole.ADMIN, userRole.SUPER_ADMIN),
   BlogsController.deleteBlog
 );

@@ -58,15 +58,15 @@ const updateMyProfileInfo = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const updateUserInfo = catchAsync(async (req: Request, res: Response) => {
-  const { userId } = req.params;
+const updateMyUserInfo = catchAsync(async (req: Request, res: Response) => {
+  const userId = (req.user as IRequestUser).userId;
   const payload = req.body;
-  const result = await UserService.updateUserInfo(userId, payload);
+  const result = await UserService.updateMyUserInfo(userId, payload);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'User updated successfully',
+    message: 'Updated successfully',
     data: result,
   });
 });
@@ -87,7 +87,7 @@ export const UserController = {
   getAllUsersController,
   getSingleUser,
   updateProfileInfo,
-  updateUserInfo,
+  updateMyUserInfo,
   updateMyProfileInfo,
   getMyProfile,
 };

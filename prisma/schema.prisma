@@ -40,9 +40,9 @@ model Profile {
   appointmentBooking AppointmentBooking[]
   products           Product[]
   blogs              Blog[]
-  feedBackForms      FeedBackForm[]
-  Faq                Faq[]
+  faqs               Faq[]
   Doctor             Doctor?
+  feedBacks          FeedBack[]
 
   @@map("profiles")
 }
@@ -77,7 +77,6 @@ model Service {
   appointmentBooked AppointmentBooking[]
   products          Product[]
   reviewAndRatings  ReviewAndRatings[]
-  feedBackForms     FeedBackForm[]
 
   @@map("services")
 }
@@ -193,20 +192,17 @@ model TimeSlot {
   @@map("time_slots")
 }
 
-model FeedBackForm {
-  feedbackId      String   @id @default(uuid())
-  feedbackComment String
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  // 
-  serviceId       String
-  service         Service  @relation(fields: [serviceId], references: [serviceId])
-  // 
-  profileId       String
-  profile         Profile  @relation(fields: [profileId], references: [profileId])
+model FeedBack {
+  feedbackId          String   @id @default(uuid())
+  feedbackSubject     String
+  feedbackDescription String
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  profileId           String
+  profile             Profile  @relation(fields: [profileId], references: [profileId])
 
   // 
-  @@map("feedback_forms")
+  @@map("feedbacks")
 }
 
 enum userRole {

@@ -8,6 +8,7 @@ import prisma from '../../../shared/prisma';
 import bcrypt from 'bcrypt';
 import config from '../../../config';
 import {
+  IProfileMyUpdateRequest,
   IProfileUpdateRequest,
   IUpdateUserResponse,
   IUserUpdateReqAndResponse,
@@ -109,7 +110,17 @@ const updateProfileInfo = async (
   }
 
   // Extract relevant properties from the payload
-  const { firstName, lastName, profileImage, role } = payload;
+  const {
+    firstName,
+    lastName,
+    profileImage,
+    role,
+    address,
+    bloodGroup,
+    contactNumber,
+  } = payload;
+
+  console.log(payload);
 
   // Build the update data based on provided fields
   const updateData: Partial<IProfileUpdateRequest> = {};
@@ -129,7 +140,17 @@ const updateProfileInfo = async (
   if (role !== undefined) {
     updateData.role = role;
   }
+  if (contactNumber !== undefined) {
+    updateData.contactNumber = contactNumber;
+  }
+  if (address !== undefined) {
+    updateData.address = address;
+  }
+  if (bloodGroup !== undefined) {
+    updateData.bloodGroup = bloodGroup;
+  }
 
+  console.log(updateData);
   // Check if any data is provided for update
   if (Object.keys(updateData).length === 0) {
     return {
@@ -157,11 +178,13 @@ const updateProfileInfo = async (
 };
 const updateMyProfileInfo = async (
   profileId: string,
-  payload: IProfileUpdateRequest
+  payload: IProfileMyUpdateRequest
 ): Promise<{
   message: string;
   updatedInfo: IProfileUpdateRequest;
 }> => {
+  console.log(payload);
+
   // Ensure ProfileId cannot be changed
   if ('profileId' in payload) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Profile ID cannot be changed');
@@ -179,13 +202,33 @@ const updateMyProfileInfo = async (
   }
 
   // Extract relevant properties from the payload
-  const { firstName, lastName, profileImage, role } = payload;
+  const {
+    firstName,
+    lastName,
+    profileImage,
+    address,
+    bloodGroup,
+    contactNumber,
+    coverPhoto,
+  } = payload;
 
   // Build the update data based on provided fields
-  const updateData: Partial<IProfileUpdateRequest> = {};
+  const updateData: Partial<IProfileMyUpdateRequest> = {};
 
   if (firstName !== undefined) {
     updateData.firstName = firstName;
+  }
+  if (address !== undefined) {
+    updateData.address = address;
+  }
+  if (bloodGroup !== undefined) {
+    updateData.bloodGroup = bloodGroup;
+  }
+  if (contactNumber !== undefined) {
+    updateData.contactNumber = contactNumber;
+  }
+  if (coverPhoto !== undefined) {
+    updateData.coverPhoto = coverPhoto;
   }
 
   if (lastName !== undefined) {
@@ -195,9 +238,14 @@ const updateMyProfileInfo = async (
   if (profileImage !== undefined) {
     updateData.profileImage = profileImage;
   }
-
-  if (role !== undefined) {
-    updateData.role = role;
+  if (profileImage !== undefined) {
+    updateData.profileImage = profileImage;
+  }
+  if (profileImage !== undefined) {
+    updateData.profileImage = profileImage;
+  }
+  if (profileImage !== undefined) {
+    updateData.profileImage = profileImage;
   }
 
   // Check if any data is provided for update
@@ -228,21 +276,31 @@ const updateMyProfileInfo = async (
 
 // ! update user info -------------------------------------------------------->>>
 
-const updateUserInfo = async (
+const updateMyUserInfo = async (
   userId: string,
-  { password, email }: IUserUpdateReqAndResponse
+  payload: IUserUpdateReqAndResponse
 ): Promise<IUpdateUserResponse> => {
   const existingUser = await prisma.user.findUnique({ where: { userId } });
 
   if (!existingUser) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'User not found!');
+    throw new ApiError(httpStatus.NOT_FOUND, 'You are  not a valid user!');
   }
+  const { oldPassword, newPassword, email } = payload;
 
   const updatedData: { email?: string; password?: string } = {};
 
-  if (password) {
+  if (oldPassword && newPassword) {
+    const isOldPasswordCorrect = await bcrypt.compare(
+      oldPassword,
+      existingUser.password
+    );
+
+    if (!isOldPasswordCorrect) {
+      throw new ApiError(httpStatus.UNAUTHORIZED, 'Old password is incorrect');
+    }
+
     const hashPassword = await bcrypt.hash(
-      password,
+      newPassword,
       Number(config.bcrypt_salt_rounds)
     );
     updatedData.password = hashPassword;
@@ -272,7 +330,7 @@ const updateUserInfo = async (
     message: 'User information updated successfully',
     updatedInfo: {
       email: email || 'Not updated',
-      password: password ? 'Updated' : 'Not updated',
+      password: newPassword ? 'Updated' : 'Not updated',
     },
   };
 };
@@ -304,7 +362,7 @@ export const UserService = {
   getAllUserService,
   getSingleUser,
   updateProfileInfo,
-  updateUserInfo,
+  updateMyUserInfo,
   getMyProfile,
   updateMyProfileInfo,
 };
