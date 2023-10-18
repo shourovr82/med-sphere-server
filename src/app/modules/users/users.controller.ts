@@ -5,12 +5,14 @@ import pick from '../../../shared/pick';
 import sendResponse from '../../../shared/sendResponse';
 import { UserService } from './user.service';
 import { IRequestUser } from './user.interface';
+import { userFilterableFields } from './user.contants';
 
 const getAllUsersController = catchAsync(
   async (req: Request, res: Response) => {
     const options = pick(req.query, ['limit', 'page', 'sortBy', 'sortOrder']);
+    const filters = pick(req.query, userFilterableFields);
 
-    const result = await UserService.getAllUserService(options);
+    const result = await UserService.getAllUserService(filters, options);
 
     sendResponse(res, {
       statusCode: httpStatus.OK,

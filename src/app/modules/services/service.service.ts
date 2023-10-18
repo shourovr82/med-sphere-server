@@ -167,6 +167,17 @@ const getSingleService = async (serviceId: string): Promise<Service | null> => {
     where: {
       serviceId,
     },
+    include: {
+      _count: {
+        select: {
+          reviewAndRatings: true,
+          appointmentBooked: true,
+        },
+      },
+      reviewAndRatings: true,
+      appointmentBooked: true,
+      category: true,
+    },
   });
 
   if (!result) {
