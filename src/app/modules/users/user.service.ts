@@ -47,28 +47,20 @@ const getAllUserService = async (
       })),
     });
   }
-  console.log(role);
 
-  // if (role) {
-  //   andConditions.push({
-  //     OR: {
-  //       profile: {
-  //         contains: role,
-  //         mode: 'insensitive',
-  //       },
-  //     },
-  //   });
-  // }
-  // if (role) {
-  //   andConditions.push({
-  //     OR: UserSearchableFields.map((field: any) => ({
-  //       [`profile.${field}`]: {
-  //         contains: role,
-  //         mode: 'insensitive',
-  //       },
-  //     })),
-  //   });
-  // }
+  if (role) {
+    andConditions.push({
+      OR: [
+        {
+          profile: {
+            role: {
+              equals: role,
+            },
+          },
+        },
+      ],
+    });
+  }
 
   if (Object.keys(filterData).length > 0) {
     andConditions.push({

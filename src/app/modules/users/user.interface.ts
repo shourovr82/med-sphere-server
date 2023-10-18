@@ -1,5 +1,4 @@
 import { Profile, userRole } from '@prisma/client';
-import { ENUM_USER_ROLE } from '../../../enums/user';
 
 export type IRequestUser = {
   role: userRole;
@@ -52,7 +51,7 @@ export type IUpdateMyProfileInfoResponse = {
 
 export type IUserFilterRequest = {
   searchTerm?: string | undefined;
-  role?: ENUM_USER_ROLE | undefined;
+  role?: userRole | undefined;
 };
 
 export type IGetAllUserResponse = {
