@@ -10,7 +10,7 @@ const router = express.Router();
 
 router.post(
   '/create-blog',
-  auth(userRole.ADMIN),
+  auth(userRole.ADMIN, userRole.SUPER_ADMIN),
   validateRequest(BlogValidation.createBlog),
   BlogsController.createNewBlog
 );
