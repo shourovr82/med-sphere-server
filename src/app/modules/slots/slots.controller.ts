@@ -7,6 +7,8 @@ import { SlotService } from './slots.service';
 //! slot Create
 
 const createNewSlot = catchAsync(async (req: Request, res: Response) => {
+  console.log(req.body);
+
   const result = await SlotService.createNewSlot(req.body);
 
   sendResponse(res, {

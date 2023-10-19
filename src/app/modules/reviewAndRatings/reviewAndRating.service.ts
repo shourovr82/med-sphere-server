@@ -33,11 +33,6 @@ const createNewRatingAndReview = async (
       serviceId: payload.serviceId,
       profileId,
     },
-    select: {
-      reviewComment: true,
-      reviewRating: true,
-      createdAt: true,
-    },
   });
   if (!createdNewRatingAndReview) {
     throw new ApiError(

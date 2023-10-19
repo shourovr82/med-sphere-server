@@ -42,7 +42,6 @@ model Profile {
   blogs              Blog[]
   faqs               Faq[]
   Doctor             Doctor?
-  feedBacks          FeedBack[]
 
   @@map("profiles")
 }
@@ -190,17 +189,17 @@ model TimeSlot {
   @@map("time_slots")
 }
 
-model FeedBack {
-  feedbackId          String   @id @default(uuid())
-  feedbackSubject     String
-  feedbackDescription String
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
-  profileId           String
-  profile             Profile  @relation(fields: [profileId], references: [profileId])
+model FeedBackForm {
+  feedbackId      String   @id @default(uuid())
+  feedbackComment String
+  userName        String
+  email           String
+  contactNumber   String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   // 
-  @@map("feedbacks")
+  @@map("feedback_forms")
 }
 
 enum userRole {

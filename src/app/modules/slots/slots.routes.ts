@@ -15,7 +15,7 @@ router.get(
 );
 router.post(
   '/create-slot',
-  auth(userRole.USER),
+  auth(userRole.USER, userRole.ADMIN, userRole.SUPER_ADMIN),
   validateRequest(SlotValidation.createSlot),
   SlotController.createNewSlot
 );

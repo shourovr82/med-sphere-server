@@ -7,7 +7,7 @@ import { IRequestUser } from '../users/user.interface';
 
 //! slot Create
 
-const createNewSlot = catchAsync(async (req: Request, res: Response) => {
+const createNewReview = catchAsync(async (req: Request, res: Response) => {
   const profileId = (req.user as IRequestUser).profileId;
   const result = await RatingAndReviewService.createNewRatingAndReview(
     profileId,
@@ -51,7 +51,7 @@ const singleReviewDelete = catchAsync(async (req: Request, res: Response) => {
 });
 
 export const ReviewController = {
-  createNewSlot,
+  createNewReview,
   updateReview,
   singleReviewDelete,
 };

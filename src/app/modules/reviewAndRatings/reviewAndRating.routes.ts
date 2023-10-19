@@ -12,7 +12,7 @@ router.post(
   '/add-review',
   auth(userRole.USER),
   validateRequest(ReviewAndRatingValidation.createReviewAndRating),
-  ReviewController.createNewSlot
+  ReviewController.createNewReview
 );
 
 router.patch(

@@ -174,7 +174,14 @@ const getSingleService = async (serviceId: string): Promise<Service | null> => {
           appointmentBooked: true,
         },
       },
-      reviewAndRatings: true,
+      reviewAndRatings: {
+        include: {
+          profile: true,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      },
       appointmentBooked: true,
       category: true,
     },
