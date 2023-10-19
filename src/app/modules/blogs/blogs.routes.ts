@@ -16,11 +16,7 @@ router.post(
 );
 router.get('/:blogId', BlogsController.getSingleBlog);
 
-router.get(
-  '/',
-  auth(userRole.USER, userRole.ADMIN, userRole.SUPER_ADMIN, userRole.DOCTOR),
-  BlogsController.getAllBlogs
-);
+router.get('/', BlogsController.getAllBlogs);
 
 router.patch(
   '/update/:blogId',

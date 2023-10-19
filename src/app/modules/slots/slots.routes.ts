@@ -20,13 +20,6 @@ router.post(
   SlotController.createNewSlot
 );
 
-router.patch(
-  '/:slotId',
-  auth(userRole.ADMIN, userRole.SUPER_ADMIN),
-  // validateRequest(SlotValidation.createSlot),
-  SlotController.updateSlot
-);
-
 router.delete(
   '/:slotId',
   auth(userRole.ADMIN, userRole.SUPER_ADMIN),

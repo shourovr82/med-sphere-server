@@ -4,11 +4,7 @@ import prisma from '../../../shared/prisma';
 import ApiError from '../../../errors/ApiError';
 import httpStatus from 'http-status';
 import { TimeSlot } from '@prisma/client';
-import {
-  ICreateSlotReq,
-  ICreateSlotResponse,
-  IUpdateSlotRequest,
-} from './slots.interface';
+import { ICreateSlotReq, ICreateSlotResponse } from './slots.interface';
 
 // ! user create
 const createNewSlot = async (
@@ -49,40 +45,6 @@ const getAllSlots = async (): Promise<TimeSlot[]> => {
 };
 
 // ! update Slot ----------------------
-const updateSlot = async (
-  slotId: string,
-  payload: Partial<IUpdateSlotRequest>
-): Promise<TimeSlot | null> => {
-  const isExistSlot = await prisma.timeSlot.findUnique({
-    where: {
-      slotId,
-    },
-  });
-
-  if (!isExistSlot) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Time Slot Not Found !!!');
-  }
-
-  const updateSlot = {
-    startTime: payload?.startTime,
-    endTime: payload?.endTime,
-  };
-
-  const result = await prisma.timeSlot.update({
-    where: {
-      slotId,
-    },
-    data: updateSlot,
-  });
-
-  if (!result) {
-    throw new ApiError(
-      httpStatus.BAD_REQUEST,
-      ' time Slot Updating Failed !!!'
-    );
-  }
-  return result;
-};
 
 // ! delete Service ----------------------
 
@@ -115,5 +77,4 @@ export const SlotService = {
   createNewSlot,
   getAllSlots,
   SlotDelete,
-  updateSlot,
 };
