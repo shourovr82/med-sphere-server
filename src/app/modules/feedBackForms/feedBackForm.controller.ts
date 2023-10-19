@@ -3,18 +3,13 @@ import httpStatus from 'http-status';
 import catchAsync from '../../../shared/catchAsync';
 import sendResponse from '../../../shared/sendResponse';
 import { FeedBackFormService } from './feedBackForm.service';
-import { IRequestUser } from '../users/user.interface';
 import { FeedBackFilterableFields } from './feedBackForm.constants';
 import pick from '../../../shared/pick';
 
 //! createNewFeedBack Create
 
 const createNewFeedBack = catchAsync(async (req: Request, res: Response) => {
-  const profileId = (req.user as IRequestUser).profileId;
-  const result = await FeedBackFormService.createNewFeedBackForm(
-    profileId,
-    req.body
-  );
+  const result = await FeedBackFormService.createNewFeedBackForm(req.body);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,

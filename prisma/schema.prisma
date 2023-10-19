@@ -191,10 +191,8 @@ model TimeSlot {
 
 model FeedBackForm {
   feedbackId      String   @id @default(uuid())
+  feedbackSubject String
   feedbackComment String
-  userName        String
-  email           String
-  contactNumber   String
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 

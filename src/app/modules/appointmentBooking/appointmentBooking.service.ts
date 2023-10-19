@@ -206,7 +206,6 @@ const updateAppointment = async (
       'Appointment Booking Not Found !!!'
     );
   }
-  console.log(payload);
 
   const updateData = {
     serviceId: payload?.serviceId,
@@ -267,9 +266,123 @@ const deleteAppointment = async (
   }
   return result;
 };
+const getMyAppointment = async (
+  profileId: string,
+  filters: IAppointmentFilterRequest,
+  options: IPaginationOptions
+): Promise<IGenericResponse<AppointmentBooking[]>> => {
+  const { limit, page, skip } = paginationHelpers.calculatePagination(options);
+
+  const { searchTerm, firstName, appointmentStatus, ...filterData } = filters;
+
+  const andConditions = [];
+
+  if (searchTerm) {
+    andConditions.push({
+      OR: appointmentSearchableFields.map((field: any) => ({
+        [field]: {
+          contains: searchTerm,
+          mode: 'insensitive',
+        },
+      })),
+    });
+  }
+
+  if (firstName) {
+    andConditions.push({
+      profile: {
+        firstName: {
+          contains: firstName,
+          mode: 'insensitive',
+        },
+      },
+    });
+  }
+
+  if (appointmentStatus) {
+    // Check if appointmentStatus is provided
+    andConditions.push({
+      appointmentStatus: { equals: appointmentStatus }, // Use the correct field name
+    });
+  }
+
+  andConditions.push({
+    profileId: profileId,
+  });
+
+  if (Object.keys(filterData).length > 0) {
+    andConditions.push({
+      AND: Object.keys(filterData).map(key => {
+        if (appointmentFields.includes(key)) {
+          return {
+            [appointmentRelationalFieldsMapper[key]]: {
+              id: (filterData as any)[key],
+            },
+          };
+        } else {
+          return {
+            [key]: {
+              equals: (filterData as any)[key],
+            },
+          };
+        }
+      }),
+    });
+  }
+
+  //@ts-ignore
+  const whereConditions: Prisma.AppointmentBookingWhereInput =
+    andConditions.length > 0 ? { AND: andConditions } : {};
+
+  const result = await prisma.appointmentBooking.findMany({
+    include: {
+      service: {
+        select: {
+          serviceName: true,
+        },
+      },
+      slot: {
+        select: {
+          slotTime: true,
+        },
+      },
+      profile: {
+        select: {
+          firstName: true,
+          lastName: true,
+          contactNumber: true,
+        },
+      },
+    },
+    where: whereConditions,
+    skip,
+    take: limit,
+    orderBy:
+      options.sortBy && options.sortOrder
+        ? { [options.sortBy]: options.sortOrder }
+        : {
+            createdAt: 'desc',
+          },
+  });
+  const total = await prisma.appointmentBooking.count({
+    where: whereConditions,
+  });
+  const totalPage = Math.ceil(total / limit);
+  return {
+    meta: {
+      page,
+      limit,
+      total,
+      totalPage,
+    },
+    data: result,
+  };
+};
+
 export const AppointmentBookingService = {
   createAppointmentBooking,
   getAllAppointment,
   deleteAppointment,
   updateAppointment,
+  getMyAppointment,
 };

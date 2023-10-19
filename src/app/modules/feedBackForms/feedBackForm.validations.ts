@@ -6,9 +6,9 @@ const createFeedBack = z.object({
       required_error: ' Feedback subject  is required',
       invalid_type_error: 'Feedback  subject  must be in   string',
     }),
-    feedbackDescription: z.string({
-      required_error: 'feedbackDescription Id is required',
-      invalid_type_error: 'feedbackDescription Id must be in   string',
+    feedbackComment: z.string({
+      required_error: 'feedback Comment  is required',
+      invalid_type_error: 'Comment must be in   string',
     }),
   }),
 });

@@ -15,6 +15,13 @@ router.post(
   ReviewController.createNewReview
 );
 
+router.get(
+  '/get-my-reviews',
+  auth(userRole.USER),
+
+  ReviewController.getMyReviews
+);
+
 router.patch(
   '/:reviewId',
   auth(userRole.USER, userRole.ADMIN, userRole.SUPER_ADMIN),

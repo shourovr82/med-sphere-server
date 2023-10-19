@@ -1,10 +1,10 @@
 export type ICreateFeedBackFormReq = {
   feedbackSubject: string;
-  feedbackDescription: string;
+  feedbackComment: string;
 };
 export type ICreateFeedBackFormResponse = {
   feedbackSubject: string;
-  feedbackDescription: string;
+  feedbackComment: string;
   createdAt: Date;
 };
 

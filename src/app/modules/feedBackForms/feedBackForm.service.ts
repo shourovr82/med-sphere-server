@@ -19,25 +19,23 @@ import {
   feedBackRelationalFields,
   feedBackRelationalFieldsMapper,
 } from './feedBackForm.constants';
-import { FeedBack, Prisma } from '@prisma/client';
+import { FeedBackForm, Prisma } from '@prisma/client';
 
 // !feedBackForm
 const createNewFeedBackForm = async (
-  profileId: string,
   payload: ICreateFeedBackFormReq
 ): Promise<ICreateFeedBackFormResponse> => {
   //
 
-  const createdNewFeedBack = await prisma.feedBack.create({
+  const createdNewFeedBack = await prisma.feedBackForm.create({
     data: {
       feedbackSubject: payload.feedbackSubject,
-      feedbackDescription: payload.feedbackDescription,
-      profileId,
+      feedbackComment: payload.feedbackComment,
     },
     select: {
       feedbackId: true,
+      feedbackComment: true,
       feedbackSubject: true,
-      feedbackDescription: true,
       createdAt: true,
     },
   });
@@ -51,7 +49,7 @@ const createNewFeedBackForm = async (
 const getAllFeedBack = async (
   filters: IFeedBackFilterRequest,
   options: IPaginationOptions
-): Promise<IGenericResponse<FeedBack[]>> => {
+): Promise<IGenericResponse<FeedBackForm[]>> => {
   const { limit, page, skip } = paginationHelpers.calculatePagination(options);
 
   const { searchTerm, ...filterData } = filters;
@@ -89,23 +87,13 @@ const getAllFeedBack = async (
     });
   }
 
-  const whereConditions: Prisma.FeedBackWhereInput =
+  const whereConditions: Prisma.FeedBackFormWhereInput =
     andConditions.length > 0 ? { AND: andConditions } : {};
 
-  const result = await prisma.feedBack.findMany({
+  const result = await prisma.feedBackForm.findMany({
     where: whereConditions,
     skip,
     take: limit,
-    include: {
-      profile: {
-        select: {
-          firstName: true,
-          lastName: true,
-          profileImage: true,
-          profileId: true,
-        },
-      },
-    },
     orderBy:
       options.sortBy && options.sortOrder
         ? { [options.sortBy]: options.sortOrder }
@@ -113,7 +101,7 @@ const getAllFeedBack = async (
             createdAt: 'desc',
           },
   });
-  const total = await prisma.feedBack.count({
+  const total = await prisma.feedBackForm.count({
     where: whereConditions,
   });
   const totalPage = Math.ceil(total / limit);
@@ -132,8 +120,8 @@ const getAllFeedBack = async (
 const updateFeedBack = async (
   feedbackId: string,
   payload: Partial<IUpdateFeedBackRequest>
-): Promise<FeedBack | null> => {
-  const isExistFeedBack = await prisma.feedBack.findUnique({
+): Promise<FeedBackForm | null> => {
+  const isExistFeedBack = await prisma.feedBackForm.findUnique({
     where: {
       feedbackId,
     },
@@ -148,7 +136,7 @@ const updateFeedBack = async (
     feedbackDescription: payload?.feedbackDescription,
   };
 
-  const result = await prisma.feedBack.update({
+  const result = await prisma.feedBackForm.update({
     where: {
       feedbackId,
     },
@@ -164,9 +152,9 @@ const updateFeedBack = async (
 
 const SingleFeedbackDelete = async (
   feedbackId: string
-): Promise<FeedBack | null> => {
+): Promise<FeedBackForm | null> => {
   const result = await prisma.$transaction(async transactionClient => {
-    const isExistFeedBack = await transactionClient.feedBack.findUnique({
+    const isExistFeedBack = await transactionClient.feedBackForm.findUnique({
       where: {
         feedbackId,
       },
@@ -176,7 +164,7 @@ const SingleFeedbackDelete = async (
       throw new ApiError(httpStatus.NOT_FOUND, 'Feed Back Not Found');
     }
 
-    const feedBackDeleted = await transactionClient.feedBack.delete({
+    const feedBackDeleted = await transactionClient.feedBackForm.delete({
       where: {
         feedbackId,
       },
