@@ -8,7 +8,7 @@ import {
   ICreateFeedBackFormReq,
   ICreateFeedBackFormResponse,
   IFeedBackFilterRequest,
-  IUpdateFeedBackRequest,
+  IUpdateFeedBackRequest
 } from './feedBackForm.interface';
 import { paginationHelpers } from '../../../helpers/paginationHelper';
 
@@ -17,7 +17,7 @@ import { IPaginationOptions } from '../../../interfaces/pagination';
 import {
   FeedBackSearchableFields,
   feedBackRelationalFields,
-  feedBackRelationalFieldsMapper,
+  feedBackRelationalFieldsMapper
 } from './feedBackForm.constants';
 import { FeedBackForm, Prisma } from '@prisma/client';
 
@@ -30,14 +30,14 @@ const createNewFeedBackForm = async (
   const createdNewFeedBack = await prisma.feedBackForm.create({
     data: {
       feedbackSubject: payload.feedbackSubject,
-      feedbackComment: payload.feedbackComment,
+      feedbackComment: payload.feedbackComment
     },
     select: {
       feedbackId: true,
       feedbackComment: true,
       feedbackSubject: true,
-      createdAt: true,
-    },
+      createdAt: true
+    }
   });
   if (!createdNewFeedBack) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Feedback failed to add');
@@ -61,9 +61,9 @@ const getAllFeedBack = async (
       OR: FeedBackSearchableFields.map((field: any) => ({
         [field]: {
           contains: searchTerm,
-          mode: 'insensitive',
-        },
-      })),
+          mode: 'insensitive'
+        }
+      }))
     });
   }
 
@@ -73,17 +73,17 @@ const getAllFeedBack = async (
         if (feedBackRelationalFields.includes(key)) {
           return {
             [feedBackRelationalFieldsMapper[key]]: {
-              id: (filterData as any)[key],
-            },
+              id: (filterData as any)[key]
+            }
           };
         } else {
           return {
             [key]: {
-              equals: (filterData as any)[key],
-            },
+              equals: (filterData as any)[key]
+            }
           };
         }
-      }),
+      })
     });
   }
 
@@ -98,11 +98,11 @@ const getAllFeedBack = async (
       options.sortBy && options.sortOrder
         ? { [options.sortBy]: options.sortOrder }
         : {
-            createdAt: 'desc',
-          },
+            createdAt: 'desc'
+          }
   });
   const total = await prisma.feedBackForm.count({
-    where: whereConditions,
+    where: whereConditions
   });
   const totalPage = Math.ceil(total / limit);
   return {
@@ -110,9 +110,9 @@ const getAllFeedBack = async (
       page,
       limit,
       total,
-      totalPage,
+      totalPage
     },
-    data: result,
+    data: result
   };
 };
 
@@ -123,8 +123,8 @@ const updateFeedBack = async (
 ): Promise<FeedBackForm | null> => {
   const isExistFeedBack = await prisma.feedBackForm.findUnique({
     where: {
-      feedbackId,
-    },
+      feedbackId
+    }
   });
 
   if (!isExistFeedBack) {
@@ -133,14 +133,14 @@ const updateFeedBack = async (
 
   const updateFeedback = {
     feedbackSubject: payload?.feedbackSubject,
-    feedbackDescription: payload?.feedbackDescription,
+    feedbackComment: payload?.feedbackComment
   };
 
   const result = await prisma.feedBackForm.update({
     where: {
-      feedbackId,
+      feedbackId
     },
-    data: updateFeedback,
+    data: updateFeedback
   });
   if (!result) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'FeedBack Updating Failed !!!');
@@ -156,8 +156,8 @@ const SingleFeedbackDelete = async (
   const result = await prisma.$transaction(async transactionClient => {
     const isExistFeedBack = await transactionClient.feedBackForm.findUnique({
       where: {
-        feedbackId,
-      },
+        feedbackId
+      }
     });
 
     if (!isExistFeedBack) {
@@ -166,8 +166,8 @@ const SingleFeedbackDelete = async (
 
     const feedBackDeleted = await transactionClient.feedBackForm.delete({
       where: {
-        feedbackId,
-      },
+        feedbackId
+      }
     });
 
     return feedBackDeleted;
@@ -182,5 +182,5 @@ export const FeedBackFormService = {
   createNewFeedBackForm,
   getAllFeedBack,
   SingleFeedbackDelete,
-  updateFeedBack,
+  updateFeedBack
 };

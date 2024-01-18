@@ -17,7 +17,6 @@ router.post(
 router.get(
   '/',
   auth(userRole.USER, userRole.ADMIN, userRole.SUPER_ADMIN),
-  // validateRequest(AppointmentBookingValidation.createAppointmentBooking),
   AppointmentBookingController.getAllAppointment
 );
 router.get(
@@ -26,7 +25,7 @@ router.get(
   AppointmentBookingController.getMyAppointment
 );
 router.patch(
-  '/:appointmentId',
+  '/update/:appointmentId',
   auth(userRole.USER, userRole.ADMIN, userRole.SUPER_ADMIN),
   // validateRequest(AppointmentBookingValidation.createAppointmentBooking),
   AppointmentBookingController.updateAppointment

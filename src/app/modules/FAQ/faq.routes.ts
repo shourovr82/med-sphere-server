@@ -13,7 +13,7 @@ router.get('/', FaqController.getAllFaqs);
 router.post(
   '/create-faq',
   auth(userRole.ADMIN, userRole.SUPER_ADMIN),
-  // validateRequest(FaqValidation.createFaq),
+  validateRequest(FaqValidation.createFaq),
   FaqController.createNewFaq
 );
 router.delete(

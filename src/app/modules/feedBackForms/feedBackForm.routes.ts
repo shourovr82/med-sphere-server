@@ -14,11 +14,7 @@ router.post(
   FeedBackController.createNewFeedBack
 );
 
-router.get(
-  '/',
-
-  FeedBackController.getAllFeedBack
-);
+router.get('/', FeedBackController.getAllFeedBack);
 
 router.patch(
   '/:feedbackId',

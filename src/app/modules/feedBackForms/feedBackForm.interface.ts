@@ -16,5 +16,5 @@ export type IFeedBackFilterRequest = {
 
 export type IUpdateFeedBackRequest = {
   feedbackSubject?: string;
-  feedbackDescription?: string;
+  feedbackComment?: string;
 };

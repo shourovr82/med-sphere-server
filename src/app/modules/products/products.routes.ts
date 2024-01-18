@@ -5,30 +5,25 @@ import auth from '../../middlewares/auth';
 import { ProductsController } from './products.controller';
 
 import { userRole } from '@prisma/client';
+import validateRequest from '../../middlewares/validateRequest';
+import { ProductValidation } from './products.validation';
 
 const router = express.Router();
 
 router.post(
   '/create-product',
   auth(userRole.ADMIN, userRole.SUPER_ADMIN),
+  validateRequest(ProductValidation.createProduct),
   ProductsController.createNewProduct
 );
-router.get(
-  '/',
+router.get('/', ProductsController.getAllProducts);
 
-  ProductsController.getAllProducts
-);
-
-router.get(
-  '/:productId',
-
-  ProductsController.getSingleProduct
-);
+router.get('/:productId', ProductsController.getSingleProduct);
 
 router.patch(
   '/:productId',
-
   auth(userRole.ADMIN, userRole.SUPER_ADMIN),
+  validateRequest(ProductValidation.updateProduct),
   ProductsController.updateProduct
 );
 

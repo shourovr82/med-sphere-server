@@ -15,7 +15,7 @@ const createNewFeedBack = catchAsync(async (req: Request, res: Response) => {
     statusCode: httpStatus.OK,
     success: true,
     message: 'FeedBack created successfully!',
-    data: result,
+    data: result
   });
 });
 
@@ -30,7 +30,7 @@ const getAllFeedBack = catchAsync(async (req: Request, res: Response) => {
     success: true,
     message: 'FeedBack fetched successfully',
     meta: result.meta,
-    data: result.data,
+    data: result.data
   });
 });
 
@@ -42,7 +42,7 @@ const updateFeedBack = catchAsync(async (req: Request, res: Response) => {
     statusCode: httpStatus.OK,
     success: true,
     message: 'Feedback Updated successfully',
-    data: result,
+    data: result
   });
 });
 
@@ -53,7 +53,7 @@ const singleFeedBackDelete = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: ` ${result?.feedbackSubject} Deleted successfully`,
+    message: ` ${result?.feedbackSubject} Deleted successfully`
   });
 });
 
@@ -61,5 +61,5 @@ export const FeedBackController = {
   createNewFeedBack,
   getAllFeedBack,
   singleFeedBackDelete,
-  updateFeedBack,
+  updateFeedBack
 };
