@@ -10,33 +10,40 @@ import prisma from '../../../shared/prisma';
 import {
   specializationFields,
   specializationRelationalFieldsMapper,
-  specializationSearchableFields,
+  specializationSearchableFields
 } from './specialization.constants';
 import {
   ISpecializationFilterRequest,
-  ISpecializationRequest,
-  IUpdateSpecializationRequest,
+  ISpecializationReq,
+  IUpdateSpecializationRequest
 } from './specialization.interface';
 
 // modules
 
-const createSpecialization = async (
-  profileId: string,
-  req: Request
-): Promise<Specialization> => {
-  const data = req.body as ISpecializationRequest;
-
-  console.log('data', data);
+const createSpecialization = async (req: Request): Promise<Specialization> => {
+  const data = req.body as ISpecializationReq;
 
   const result = await prisma.$transaction(async transactionClient => {
-    const newSpecializationData = {
+    const isExistSpecializationName =
+      await transactionClient.specialization.findUnique({
+        where: {
+          specializationName: data?.specializationName
+        }
+      });
+    if (isExistSpecializationName)
+      throw new ApiError(
+        httpStatus.CONFLICT,
+        'Specialization Name Already Exist. try new'
+      );
+
+    const newSpecializationData: ISpecializationReq = {
       specializationName: data.specializationName,
-      description: data.description,
+      description: data.description
     };
 
     const createdSpecialization = await transactionClient.specialization.create(
       {
-        data: newSpecializationData,
+        data: newSpecializationData
       }
     );
     return createdSpecialization;
@@ -66,9 +73,9 @@ const getAllSpecialization = async (
       OR: specializationSearchableFields.map((field: any) => ({
         [field]: {
           contains: searchTerm,
-          mode: 'insensitive',
-        },
-      })),
+          mode: 'insensitive'
+        }
+      }))
     });
   }
 
@@ -78,17 +85,17 @@ const getAllSpecialization = async (
         if (specializationFields.includes(key)) {
           return {
             [specializationRelationalFieldsMapper[key]]: {
-              id: (filterData as any)[key],
-            },
+              id: (filterData as any)[key]
+            }
           };
         } else {
           return {
             [key]: {
-              equals: (filterData as any)[key],
-            },
+              equals: (filterData as any)[key]
+            }
           };
         }
-      }),
+      })
     });
   }
 
@@ -97,7 +104,7 @@ const getAllSpecialization = async (
 
   const result = await prisma.specialization.findMany({
     include: {
-      doctors: true,
+      doctors: true
     },
     where: whereConditions,
     skip,
@@ -106,11 +113,11 @@ const getAllSpecialization = async (
       options.sortBy && options.sortOrder
         ? { [options.sortBy]: options.sortOrder }
         : {
-            createdAt: 'desc',
-          },
+            createdAt: 'desc'
+          }
   });
   const total = await prisma.specialization.count({
-    where: whereConditions,
+    where: whereConditions
   });
   const totalPage = Math.ceil(total / limit);
   return {
@@ -118,9 +125,9 @@ const getAllSpecialization = async (
       page,
       limit,
       total,
-      totalPage,
+      totalPage
     },
-    data: result,
+    data: result
   };
 };
 
@@ -131,24 +138,33 @@ const updateSpecialization = async (
 ): Promise<Specialization | null> => {
   const isExist = await prisma.specialization.findUnique({
     where: {
-      specializationId,
-    },
+      specializationId
+    }
   });
 
   if (!isExist) {
     throw new ApiError(httpStatus.NOT_FOUND, 'specialization Not Found !!!');
   }
-
+  const isExistSpecializationName = await prisma.specialization.findUnique({
+    where: {
+      specializationName: payload?.specializationName
+    }
+  });
+  if (isExistSpecializationName)
+    throw new ApiError(
+      httpStatus.CONFLICT,
+      'Specialization Name Already Exist. try new'
+    );
   const updateData = {
     specializationName: payload?.specializationName,
-    description: payload?.description,
+    description: payload?.description
   };
 
   const result = await prisma.specialization.update({
     where: {
-      specializationId,
+      specializationId
     },
-    data: updateData,
+    data: updateData
   });
   if (!result) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Updating Failed !!!');
@@ -161,8 +177,8 @@ const deleteSpecialization = async (
 ): Promise<Specialization | null> => {
   const isExist = await prisma.specialization.findUnique({
     where: {
-      specializationId,
-    },
+      specializationId
+    }
   });
 
   if (!isExist) {
@@ -171,8 +187,8 @@ const deleteSpecialization = async (
 
   const result = await prisma.specialization.delete({
     where: {
-      specializationId,
-    },
+      specializationId
+    }
   });
 
   if (!result) {
@@ -186,5 +202,5 @@ export const SpecializationService = {
   createSpecialization,
   getAllSpecialization,
   deleteSpecialization,
-  updateSpecialization,
+  updateSpecialization
 };

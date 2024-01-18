@@ -10,8 +10,8 @@ const app: Application = express();
 
 app.use(
   cors({
-    origin: ['http://localhost:3000'],
-    credentials: true,
+    origin: ['http://localhost:3000', 'https://med-sphere-frontend.vercel.app'],
+    credentials: true
   })
 );
 app.use(cookieParser());
@@ -33,9 +33,9 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     errorMessages: [
       {
         path: req.originalUrl,
-        message: 'API Not Found',
-      },
-    ],
+        message: 'API Not Found'
+      }
+    ]
   });
   next();
 });

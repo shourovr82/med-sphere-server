@@ -10,12 +10,12 @@ import prisma from '../../../shared/prisma';
 import {
   categoryFields,
   categoryRelationalFieldsMapper,
-  categorySearchableFields,
+  categorySearchableFields
 } from './category.constants';
 import {
   ICategoryFilterRequest,
   ICategoryRequest,
-  IUpdateCategoryRequest,
+  IUpdateCategoryRequest
 } from './category.interface';
 
 // modules
@@ -24,11 +24,11 @@ const createCategory = async (data: ICategoryRequest): Promise<Category> => {
   const result = await prisma.$transaction(async transactionClient => {
     const newCategoryData = {
       categoryName: data.categoryName,
-      description: data.description,
+      description: data.description
     };
 
     const createdSpecialization = await transactionClient.category.create({
-      data: newCategoryData,
+      data: newCategoryData
     });
     return createdSpecialization;
   });
@@ -54,9 +54,9 @@ const getAllCategory = async (
       OR: categorySearchableFields.map((field: any) => ({
         [field]: {
           contains: searchTerm,
-          mode: 'insensitive',
-        },
-      })),
+          mode: 'insensitive'
+        }
+      }))
     });
   }
 
@@ -66,17 +66,17 @@ const getAllCategory = async (
         if (categoryFields.includes(key)) {
           return {
             [categoryRelationalFieldsMapper[key]]: {
-              id: (filterData as any)[key],
-            },
+              id: (filterData as any)[key]
+            }
           };
         } else {
           return {
             [key]: {
-              equals: (filterData as any)[key],
-            },
+              equals: (filterData as any)[key]
+            }
           };
         }
-      }),
+      })
     });
   }
 
@@ -84,6 +84,10 @@ const getAllCategory = async (
     andConditions.length > 0 ? { AND: andConditions } : {};
 
   const result = await prisma.category.findMany({
+    include: {
+      _count: true,
+      services: true
+    },
     where: whereConditions,
     skip,
     take: limit,
@@ -91,11 +95,11 @@ const getAllCategory = async (
       options.sortBy && options.sortOrder
         ? { [options.sortBy]: options.sortOrder }
         : {
-            createdAt: 'desc',
-          },
+            createdAt: 'desc'
+          }
   });
   const total = await prisma.category.count({
-    where: whereConditions,
+    where: whereConditions
   });
   const totalPage = Math.ceil(total / limit);
   return {
@@ -103,9 +107,9 @@ const getAllCategory = async (
       page,
       limit,
       total,
-      totalPage,
+      totalPage
     },
-    data: result,
+    data: result
   };
 };
 
@@ -116,8 +120,8 @@ const updateCategory = async (
 ): Promise<Category | null> => {
   const isExistCategory = await prisma.category.findUnique({
     where: {
-      categoryId,
-    },
+      categoryId
+    }
   });
 
   if (!isExistCategory) {
@@ -126,14 +130,14 @@ const updateCategory = async (
 
   const updateCategoryData = {
     categoryName: payload?.categoryName,
-    description: payload?.description,
+    description: payload?.description
   };
 
   const result = await prisma.category.update({
     where: {
-      categoryId,
+      categoryId
     },
-    data: updateCategoryData,
+    data: updateCategoryData
   });
   if (!result) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Category Updating Failed !!!');
@@ -147,8 +151,8 @@ const singleDeleteCategory = async (
   const result = await prisma.$transaction(async transactionClient => {
     const isExistCategory = await transactionClient.category.findUnique({
       where: {
-        categoryId,
-      },
+        categoryId
+      }
     });
 
     if (!isExistCategory) {
@@ -157,8 +161,8 @@ const singleDeleteCategory = async (
 
     const categoryDeleted = await transactionClient.category.delete({
       where: {
-        categoryId,
-      },
+        categoryId
+      }
     });
 
     return categoryDeleted;
@@ -173,5 +177,5 @@ export const CategoryService = {
   createCategory,
   getAllCategory,
   updateCategory,
-  singleDeleteCategory,
+  singleDeleteCategory
 };

@@ -3,12 +3,14 @@ export const ServiceFilterableFields: string[] = [
   'serviceName',
   'createdAt',
   'location',
-  'servicePrice',
+  'servicePrice'
 ];
 
 export const serviceSearchableFields: string[] = ['serviceName', 'location'];
 
 export const serviceRelationalFields: string[] = ['categoryId'];
 export const serviceRelationalFieldsMapper: { [key: string]: string } = {
-  categoryId: 'categoryId',
+  categoryId: 'categoryId'
 };
+
+export const ZodServiceStatus: string[] = ['available', 'upcoming'];

@@ -12,59 +12,58 @@ import { FeedBackRoutes } from '../modules/feedBackForms/feedBackForm.routes';
 import { AppointmentBookingRoutes } from '../modules/appointmentBooking/appointmentBooking.routes';
 import { FaqRoutes } from '../modules/FAQ/faq.routes';
 import { ProductsRoutes } from '../modules/products/products.routes';
-// import { AuthRoutes } from '../modules/auth/auth.routes';
 
 const router = express.Router();
 
 const moduleRoutes = [
   {
     path: '/auth',
-    route: AuthRoutes,
+    route: AuthRoutes
   },
   {
     path: '/users',
-    route: UserRoutes,
+    route: UserRoutes
   },
   {
     path: '/slots',
-    route: SlotRoutes,
+    route: SlotRoutes
   },
   {
     path: '/blogs',
-    route: BlogRoutes,
+    route: BlogRoutes
   },
   {
     path: '/specialization',
-    route: SpecializationRoutes,
+    route: SpecializationRoutes
   },
   {
     path: '/services',
-    route: MedServiceRoutes,
+    route: MedServiceRoutes
   },
   {
     path: '/categories',
-    route: CategoryRoutes,
+    route: CategoryRoutes
   },
   {
     path: '/review-ratings',
-    route: ReviewAndRatingRoutes,
+    route: ReviewAndRatingRoutes
   },
   {
     path: '/feedbacks',
-    route: FeedBackRoutes,
+    route: FeedBackRoutes
   },
   {
     path: '/appointment-booking',
-    route: AppointmentBookingRoutes,
+    route: AppointmentBookingRoutes
   },
   {
     path: '/faqs',
-    route: FaqRoutes,
+    route: FaqRoutes
   },
   {
     path: '/products',
-    route: ProductsRoutes,
-  },
+    route: ProductsRoutes
+  }
 ];
 
 moduleRoutes.forEach(route => router.use(route.path, route.route));

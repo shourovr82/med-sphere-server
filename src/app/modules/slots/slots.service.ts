@@ -13,8 +13,8 @@ const createNewSlot = async (
   //
   const existingSlot = await prisma.timeSlot.findFirst({
     where: {
-      slotTime: payload.slotTime,
-    },
+      slotTime: payload.slotTime
+    }
   });
 
   if (existingSlot) {
@@ -22,13 +22,13 @@ const createNewSlot = async (
   }
   const createdNewSlot = await prisma.timeSlot.create({
     data: {
-      slotTime: payload.slotTime,
+      slotTime: payload.slotTime
     },
     select: {
       slotId: true,
       slotTime: true,
-      createdAt: true,
-    },
+      createdAt: true
+    }
   });
   if (!createNewSlot) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Slot already booked');
@@ -39,7 +39,12 @@ const createNewSlot = async (
 
 const getAllSlots = async (): Promise<TimeSlot[]> => {
   //
-  const allSlots = await prisma.timeSlot.findMany({});
+  const allSlots = await prisma.timeSlot.findMany({
+    include: {
+      _count: true,
+      appointments: true
+    }
+  });
 
   return allSlots;
 };
@@ -53,8 +58,8 @@ const SlotDelete = async (slotId: string): Promise<TimeSlot | null> => {
 
   const isExistSlot = await prisma.timeSlot.findUnique({
     where: {
-      slotId,
-    },
+      slotId
+    }
   });
 
   if (!isExistSlot) {
@@ -63,8 +68,8 @@ const SlotDelete = async (slotId: string): Promise<TimeSlot | null> => {
 
   const result = await prisma.timeSlot.delete({
     where: {
-      slotId,
-    },
+      slotId
+    }
   });
   if (!result) {
     throw new ApiError(httpStatus.NOT_FOUND, ' Time Slot Not deleted !!!');
@@ -76,5 +81,5 @@ const SlotDelete = async (slotId: string): Promise<TimeSlot | null> => {
 export const SlotService = {
   createNewSlot,
   getAllSlots,
-  SlotDelete,
+  SlotDelete
 };

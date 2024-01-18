@@ -1,53 +1,46 @@
 import { z } from 'zod';
+import { ZodServiceStatus } from './service.constants';
 
 const createService = z.object({
-  serviceName: z.string({
-    required_error: 'Service Name is Required',
-    invalid_type_error: 'Blog Title must be in String',
-  }),
-  description: z.string({
-    required_error: 'Description is Required',
-    invalid_type_error: 'Description must be in String',
-  }),
-  location: z.string({
-    required_error: 'Location is Required',
-    invalid_type_error: 'Location must be in String',
-  }),
-  categoryId: z.string({
-    required_error: 'categoryId is Required',
-    invalid_type_error: 'categoryId must be in String',
-  }),
-  servicePrice: z.number({
-    required_error: 'Service Price is Required',
-    invalid_type_error: 'Service Price must be in Number',
-  }),
+  body: z.object({
+    serviceName: z.string({
+      required_error: 'Service Name is Required'
+    }),
+    description: z.string({
+      required_error: 'Description is Required'
+    }),
+    location: z.string({
+      required_error: 'Location is Required'
+    }),
+    categoryId: z.string({
+      required_error: 'categoryId is Required'
+    }),
+    serviceImage: z.string({
+      required_error: 'serviceImage is Required'
+    }),
+    servicePrice: z.number({
+      required_error: 'Service Price is Required'
+    }),
+    serviceStatus: z.enum([...ZodServiceStatus] as [string, ...string[]], {
+      required_error: 'Service Status is Required'
+    })
+  })
 });
 //
-const updateStyle = z.object({
+const updateService = z.object({
   body: z.object({
-    itemId: z
-      .string({ invalid_type_error: 'Item ID must be in String' })
-      .optional(),
-    image: z
-      .string({ invalid_type_error: 'Image Link must be in String' })
-      .optional(),
-    fabric: z
-      .string({ invalid_type_error: 'Fabric must be in String' })
-      .optional(),
-    isActiveStyle: z
-      .boolean({
-        invalid_type_error: 'Is active Style must be between true or false',
-      })
-      .optional(),
-    factoryId: z
-      .string({
-        invalid_type_error: 'Factory ID must be in String',
-      })
-      .optional(),
-  }),
+    serviceName: z.string().optional(),
+    description: z.string().optional(),
+    location: z.string().optional(),
+    categoryId: z.string().optional(),
+    serviceImage: z.string().optional(),
+    servicePrice: z.number().optional(),
+    serviceStatus: z
+      .enum([...ZodServiceStatus] as [string, ...string[]])
+      .optional()
+  })
 });
-
-export const MedServiceValidation = {
+export const ServicesValidation = {
   createService,
-  updateStyle,
+  updateService
 };

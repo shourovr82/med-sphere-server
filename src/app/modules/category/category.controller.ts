@@ -13,7 +13,7 @@ const createCategory = catchAsync(async (req: Request, res: Response) => {
     statusCode: httpStatus.OK,
     success: true,
     message: 'Category created Successfully',
-    data: result,
+    data: result
   });
 });
 
@@ -28,7 +28,7 @@ const getAllCategory = catchAsync(async (req: Request, res: Response) => {
     success: true,
     message: 'Category fetched successfully',
     meta: result.meta,
-    data: result.data,
+    data: result.data
   });
 });
 
@@ -40,7 +40,7 @@ const updateCategory = catchAsync(async (req: Request, res: Response) => {
     statusCode: httpStatus.OK,
     success: true,
     message: 'Category Updated successfully',
-    data: result,
+    data: result
   });
 });
 
@@ -51,7 +51,7 @@ const singleCategoryDelete = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: `${result?.categoryName} Deleted successfully `,
+    message: `${result?.categoryName} Deleted successfully `
   });
 });
 
@@ -59,5 +59,5 @@ export const CategoryController = {
   createCategory,
   getAllCategory,
   updateCategory,
-  singleCategoryDelete,
+  singleCategoryDelete
 };

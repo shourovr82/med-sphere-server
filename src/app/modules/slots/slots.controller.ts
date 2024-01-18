@@ -15,7 +15,7 @@ const createNewSlot = catchAsync(async (req: Request, res: Response) => {
     statusCode: httpStatus.OK,
     success: true,
     message: 'slot created successfully!',
-    data: result,
+    data: result
   });
 });
 
@@ -28,7 +28,7 @@ const getAllSlots = catchAsync(async (req: Request, res: Response) => {
     statusCode: httpStatus.OK,
     success: true,
     message: 'slot retrieved successfully!',
-    data: result,
+    data: result
   });
 });
 
@@ -39,12 +39,12 @@ const deleteSlot = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: `${result?.slotId} Deleted successfully `,
+    message: `${result?.slotId} Deleted successfully `
   });
 });
 
 export const SlotController = {
   createNewSlot,
   getAllSlots,
-  deleteSlot,
+  deleteSlot
 };

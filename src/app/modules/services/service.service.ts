@@ -7,7 +7,7 @@ import {
   IServiceFilterRequest,
   IServiceCreateRequest,
   IUpdateServiceRequest,
-  ICreateNewServiceResponse,
+  ICreateNewServiceResponse
 } from './service.interface';
 
 import { IPaginationOptions } from '../../../interfaces/pagination';
@@ -17,7 +17,7 @@ import { paginationHelpers } from '../../../helpers/paginationHelper';
 import {
   serviceRelationalFields,
   serviceRelationalFieldsMapper,
-  serviceSearchableFields,
+  serviceSearchableFields
 } from './service.constants';
 
 // modules
@@ -32,7 +32,7 @@ const createNewService = async (
     location: data.location,
     categoryId: data.categoryId,
     servicePrice: data.servicePrice,
-    serviceStatus: data.serviceStatus,
+    serviceStatus: data.serviceStatus
   };
 
   console.log(serviceData);
@@ -40,22 +40,22 @@ const createNewService = async (
   const result = await prisma.$transaction(async transactionClient => {
     const isExistCategory = await transactionClient.category.findUnique({
       where: {
-        categoryId: serviceData.categoryId,
+        categoryId: serviceData.categoryId
       },
       select: {
-        categoryId: true,
-      },
+        categoryId: true
+      }
     });
     if (!isExistCategory) {
       throw new ApiError(httpStatus.BAD_REQUEST, 'Category is not exist');
     }
     const isExistServiceName = await transactionClient.service.findFirst({
       where: {
-        serviceName: serviceData.serviceName,
+        serviceName: serviceData.serviceName
       },
       select: {
-        serviceName: true,
-      },
+        serviceName: true
+      }
     });
 
     if (isExistServiceName) {
@@ -66,7 +66,7 @@ const createNewService = async (
     }
 
     const createdService = await transactionClient.service.create({
-      data: serviceData,
+      data: serviceData
     });
     return createdService;
   });
@@ -91,17 +91,17 @@ const getAllServices = async (
       OR: serviceSearchableFields.map((field: any) => ({
         [field]: {
           contains: searchTerm,
-          mode: 'insensitive',
-        },
-      })),
+          mode: 'insensitive'
+        }
+      }))
     });
   }
 
   if (servicePrice) {
     andConditions.push({
       servicePrice: {
-        equals: Number(servicePrice),
-      },
+        equals: Number(servicePrice)
+      }
     });
   }
 
@@ -111,17 +111,17 @@ const getAllServices = async (
         if (serviceRelationalFields.includes(key)) {
           return {
             [serviceRelationalFieldsMapper[key]]: {
-              id: (filterData as any)[key],
-            },
+              id: (filterData as any)[key]
+            }
           };
         } else {
           return {
             [key]: {
-              equals: (filterData as any)[key],
-            },
+              equals: (filterData as any)[key]
+            }
           };
         }
-      }),
+      })
     });
   }
 
@@ -133,7 +133,7 @@ const getAllServices = async (
       category: true,
       products: true,
       reviewAndRatings: true,
-      appointmentBooked: true,
+      appointmentBooked: true
     },
     where: whereConditions,
     skip,
@@ -142,11 +142,11 @@ const getAllServices = async (
       options.sortBy && options.sortOrder
         ? { [options.sortBy]: options.sortOrder }
         : {
-            createdAt: 'desc',
-          },
+            createdAt: 'desc'
+          }
   });
   const total = await prisma.service.count({
-    where: whereConditions,
+    where: whereConditions
   });
   const totalPage = Math.ceil(total / limit);
   return {
@@ -154,9 +154,9 @@ const getAllServices = async (
       page,
       limit,
       total,
-      totalPage,
+      totalPage
     },
-    data: result,
+    data: result
   };
 };
 
@@ -165,26 +165,27 @@ const getSingleService = async (serviceId: string): Promise<Service | null> => {
 
   const result = await prisma.service.findUnique({
     where: {
-      serviceId,
+      serviceId
     },
     include: {
+      products: true,
       _count: {
         select: {
           reviewAndRatings: true,
-          appointmentBooked: true,
-        },
+          appointmentBooked: true
+        }
       },
       reviewAndRatings: {
         include: {
-          profile: true,
+          profile: true
         },
         orderBy: {
-          createdAt: 'desc',
-        },
+          createdAt: 'desc'
+        }
       },
       appointmentBooked: true,
-      category: true,
-    },
+      category: true
+    }
   });
 
   if (!result) {
@@ -200,8 +201,8 @@ const updateService = async (
 ): Promise<Service | null> => {
   const isExistService = await prisma.service.findUnique({
     where: {
-      serviceId,
-    },
+      serviceId
+    }
   });
 
   if (!isExistService) {
@@ -215,14 +216,14 @@ const updateService = async (
     location: payload?.location,
     categoryId: payload?.categoryId,
     servicePrice: payload?.servicePrice,
-    serviceStatus: payload?.serviceStatus,
+    serviceStatus: payload?.serviceStatus
   };
 
   const result = await prisma.service.update({
     where: {
-      serviceId,
+      serviceId
     },
-    data: updateServiceData,
+    data: updateServiceData
   });
 
   if (!result) {
@@ -240,8 +241,8 @@ const SingleServiceDelete = async (
 
   const isExistService = await prisma.service.findUnique({
     where: {
-      serviceId,
-    },
+      serviceId
+    }
   });
 
   if (!isExistService) {
@@ -250,8 +251,8 @@ const SingleServiceDelete = async (
 
   const result = await prisma.service.delete({
     where: {
-      serviceId,
-    },
+      serviceId
+    }
   });
 
   if (!result) {
@@ -266,5 +267,5 @@ export const MedService = {
   getAllServices,
   getSingleService,
   SingleServiceDelete,
-  updateService,
+  updateService
 };

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import httpStatus from 'http-status';
@@ -15,15 +16,15 @@ import {
   IUpdateUserResponse,
   IUserFilterRequest,
   IUserUpdateReqAndResponse,
-  IUsersResponse,
+  IUsersResponse
 } from './user.interface';
 import { IGenericResponse } from '../../../interfaces/common';
 import { Prisma } from '@prisma/client';
 import {
   UserSearchableFields,
   userRelationalFields,
-  userRelationalFieldsMapper,
-} from './user.contants';
+  userRelationalFieldsMapper
+} from './user.constants';
 
 // ! getting all users ----------------------------------------------------------------------->>>
 
@@ -42,9 +43,9 @@ const getAllUserService = async (
       OR: UserSearchableFields.map((field: any) => ({
         [field]: {
           contains: searchTerm,
-          mode: 'insensitive',
-        },
-      })),
+          mode: 'insensitive'
+        }
+      }))
     });
   }
 
@@ -54,11 +55,11 @@ const getAllUserService = async (
         {
           profile: {
             role: {
-              equals: role,
-            },
-          },
-        },
-      ],
+              equals: role
+            }
+          }
+        }
+      ]
     });
   }
 
@@ -68,17 +69,17 @@ const getAllUserService = async (
         if (userRelationalFields.includes(key)) {
           return {
             [userRelationalFieldsMapper[key]]: {
-              id: (filterData as any)[key],
-            },
+              id: (filterData as any)[key]
+            }
           };
         } else {
           return {
             [key]: {
-              equals: (filterData as any)[key],
-            },
+              equals: (filterData as any)[key]
+            }
           };
         }
-      }),
+      })
     });
   }
 
@@ -95,17 +96,17 @@ const getAllUserService = async (
       createdAt: true,
       userId: true,
       profileId: true,
-      profile: true,
+      profile: true
     },
     orderBy:
       options.sortBy && options.sortOrder
         ? { [options.sortBy]: options.sortOrder }
         : {
-            createdAt: 'desc',
-          },
+            createdAt: 'desc'
+          }
   });
   const total = await prisma.user.count({
-    where: whereConditions,
+    where: whereConditions
   });
   const totalPage = Math.ceil(total / limit);
   return {
@@ -113,9 +114,9 @@ const getAllUserService = async (
       page,
       limit,
       total,
-      totalPage,
+      totalPage
     },
-    data: result,
+    data: result
   };
 };
 
@@ -126,11 +127,11 @@ const getSingleUser = async (
   // Check if the user exists
   const existingUser = await prisma.user.findUnique({
     where: {
-      userId,
+      userId
     },
     select: {
-      profileId: true,
-    },
+      profileId: true
+    }
   });
 
   if (!existingUser) {
@@ -139,7 +140,7 @@ const getSingleUser = async (
 
   const result = await prisma.user.findUnique({
     where: {
-      profileId: existingUser.profileId!,
+      profileId: existingUser.profileId!
     },
 
     select: {
@@ -147,8 +148,8 @@ const getSingleUser = async (
       email: true,
       profile: true,
       createdAt: true,
-      updatedAt: true,
-    },
+      updatedAt: true
+    }
   });
 
   if (!result) {
@@ -173,8 +174,8 @@ const updateProfileInfo = async (
   // Check if the profile exists
   const existingProfile = await prisma.profile.findUnique({
     where: {
-      profileId,
-    },
+      profileId
+    }
   });
 
   if (!existingProfile) {
@@ -189,54 +190,40 @@ const updateProfileInfo = async (
     role,
     address,
     bloodGroup,
-    contactNumber,
+    contactNumber
   } = payload;
-
-  console.log(payload);
 
   // Build the update data based on provided fields
   const updateData: Partial<IProfileUpdateRequest> = {};
 
-  if (firstName !== undefined) {
-    updateData.firstName = firstName;
-  }
+  if (firstName !== undefined) updateData.firstName = firstName;
 
-  if (lastName !== undefined) {
-    updateData.lastName = lastName;
-  }
+  if (lastName !== undefined) updateData.lastName = lastName;
 
-  if (profileImage !== undefined) {
-    updateData.profileImage = profileImage;
-  }
+  if (profileImage !== undefined) updateData.profileImage = profileImage;
 
-  if (role !== undefined) {
-    updateData.role = role;
-  }
-  if (contactNumber !== undefined) {
-    updateData.contactNumber = contactNumber;
-  }
-  if (address !== undefined) {
-    updateData.address = address;
-  }
-  if (bloodGroup !== undefined) {
-    updateData.bloodGroup = bloodGroup;
-  }
+  if (role !== undefined) updateData.role = role;
 
-  console.log(updateData);
+  if (contactNumber !== undefined) updateData.contactNumber = contactNumber;
+
+  if (address !== undefined) updateData.address = address;
+
+  if (bloodGroup !== undefined) updateData.bloodGroup = bloodGroup;
+
   // Check if any data is provided for update
   if (Object.keys(updateData).length === 0) {
     return {
       message: 'No changes to update',
-      updatedInfo: {},
+      updatedInfo: {}
     };
   }
 
   // Update the profile
   const result = await prisma.profile.update({
     where: {
-      profileId,
+      profileId
     },
-    data: updateData,
+    data: updateData
   });
 
   if (!result) {
@@ -245,7 +232,7 @@ const updateProfileInfo = async (
 
   return {
     message: 'Profile information updated successfully',
-    updatedInfo: updateData,
+    updatedInfo: updateData
   };
 };
 const updateMyProfileInfo = async (
@@ -255,8 +242,6 @@ const updateMyProfileInfo = async (
   message: string;
   updatedInfo: IProfileUpdateRequest;
 }> => {
-  console.log(payload);
-
   // Ensure ProfileId cannot be changed
   if ('profileId' in payload) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Profile ID cannot be changed');
@@ -265,13 +250,12 @@ const updateMyProfileInfo = async (
   // Check if the profile exists
   const existingProfile = await prisma.profile.findUnique({
     where: {
-      profileId,
-    },
+      profileId
+    }
   });
 
-  if (!existingProfile) {
+  if (!existingProfile)
     throw new ApiError(httpStatus.NOT_FOUND, 'Profile not found!');
-  }
 
   // Extract relevant properties from the payload
   const {
@@ -281,59 +265,46 @@ const updateMyProfileInfo = async (
     address,
     bloodGroup,
     contactNumber,
-    coverPhoto,
+    coverPhoto
   } = payload;
 
   // Build the update data based on provided fields
   const updateData: Partial<IProfileMyUpdateRequest> = {};
 
-  if (firstName !== undefined) {
-    updateData.firstName = firstName;
-  }
-  if (address !== undefined) {
-    updateData.address = address;
-  }
-  if (bloodGroup !== undefined) {
-    updateData.bloodGroup = bloodGroup;
-  }
-  if (contactNumber !== undefined) {
-    updateData.contactNumber = contactNumber;
-  }
-  if (coverPhoto !== undefined) {
-    updateData.coverPhoto = coverPhoto;
-  }
+  if (firstName !== undefined) updateData.firstName = firstName;
 
-  if (lastName !== undefined) {
-    updateData.lastName = lastName;
-  }
+  if (address !== undefined) updateData.address = address;
 
-  if (profileImage !== undefined) {
-    updateData.profileImage = profileImage;
-  }
-  if (profileImage !== undefined) {
-    updateData.profileImage = profileImage;
-  }
-  if (profileImage !== undefined) {
-    updateData.profileImage = profileImage;
-  }
-  if (profileImage !== undefined) {
-    updateData.profileImage = profileImage;
-  }
+  if (bloodGroup !== undefined) updateData.bloodGroup = bloodGroup;
+
+  if (contactNumber !== undefined) updateData.contactNumber = contactNumber;
+
+  if (coverPhoto !== undefined) updateData.coverPhoto = coverPhoto;
+
+  if (lastName !== undefined) updateData.lastName = lastName;
+
+  if (profileImage !== undefined) updateData.profileImage = profileImage;
+
+  if (profileImage !== undefined) updateData.profileImage = profileImage;
+
+  if (profileImage !== undefined) updateData.profileImage = profileImage;
+
+  if (profileImage !== undefined) updateData.profileImage = profileImage;
 
   // Check if any data is provided for update
   if (Object.keys(updateData).length === 0) {
     return {
       message: 'No changes to update',
-      updatedInfo: {},
+      updatedInfo: {}
     };
   }
 
   // Update the profile
   const result = await prisma.profile.update({
     where: {
-      profileId,
+      profileId
     },
-    data: updateData,
+    data: updateData
   });
 
   if (!result) {
@@ -342,7 +313,7 @@ const updateMyProfileInfo = async (
 
   return {
     message: 'Profile information updated successfully',
-    updatedInfo: updateData,
+    updatedInfo: updateData
   };
 };
 
@@ -352,12 +323,17 @@ const updateMyUserInfo = async (
   userId: string,
   payload: IUserUpdateReqAndResponse
 ): Promise<IUpdateUserResponse> => {
-  const existingUser = await prisma.user.findUnique({ where: { userId } });
+  const { oldPassword, newPassword, email } = payload;
+
+  const existingUser = await prisma.user.findUnique({
+    where: {
+      userId
+    }
+  });
 
   if (!existingUser) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'You are  not a valid user!');
+    throw new ApiError(httpStatus.NOT_FOUND, 'Profile not found!');
   }
-  const { oldPassword, newPassword, email } = payload;
 
   const updatedData: { email?: string; password?: string } = {};
 
@@ -379,19 +355,25 @@ const updateMyUserInfo = async (
   }
 
   if (email) {
-    updatedData.email = email;
+    const existingEmail = await prisma.user.findUnique({ where: { email } });
+
+    if (existingEmail) {
+      throw new ApiError(httpStatus.NOT_FOUND, 'Email Already Exist!');
+    } else {
+      updatedData.email = email;
+    }
   }
 
   if (Object.keys(updatedData).length === 0) {
     return {
       message: 'No changes to update',
-      updatedInfo: {},
+      updatedInfo: {}
     };
   }
 
   const result = await prisma.user.update({
     where: { userId },
-    data: updatedData,
+    data: updatedData
   });
 
   if (!result) {
@@ -402,8 +384,8 @@ const updateMyUserInfo = async (
     message: 'User information updated successfully',
     updatedInfo: {
       email: email || 'Not updated',
-      password: newPassword ? 'Updated' : 'Not updated',
-    },
+      password: newPassword ? 'Updated' : 'Not updated'
+    }
   };
 };
 
@@ -411,15 +393,15 @@ const updateMyUserInfo = async (
 const getMyProfile = async (userId: string): Promise<IUsersResponse | null> => {
   const result = await prisma.user.findUnique({
     where: {
-      userId,
+      userId
     },
     select: {
       userId: true,
       email: true,
       profile: true,
       createdAt: true,
-      updatedAt: true,
-    },
+      updatedAt: true
+    }
   });
 
   if (!result) {
@@ -436,5 +418,5 @@ export const UserService = {
   updateProfileInfo,
   updateMyUserInfo,
   getMyProfile,
-  updateMyProfileInfo,
+  updateMyProfileInfo
 };

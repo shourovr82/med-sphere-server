@@ -15,7 +15,7 @@ const createNewUser = catchAsync(async (req: Request, res: Response) => {
     statusCode: httpStatus.OK,
     success: true,
     message: 'User created successfully!',
-    data: result,
+    data: result
   });
 });
 
@@ -28,7 +28,7 @@ const userLogin = catchAsync(async (req: Request, res: Response) => {
   // set refresh token into cookie
   const cookieOptions = {
     secure: config.env === 'production',
-    httpOnly: true,
+    httpOnly: true
   };
   res.cookie('refreshToken', refreshToken, cookieOptions);
 
@@ -37,8 +37,8 @@ const userLogin = catchAsync(async (req: Request, res: Response) => {
     success: true,
     message: 'User Logged in successfully!',
     data: {
-      accessToken,
-    },
+      accessToken
+    }
   });
 });
 
@@ -52,7 +52,7 @@ const refreshToken = catchAsync(async (req: Request, res: Response) => {
   //! set refresh token into cookie
   const cookieOptions = {
     secure: config.env === 'production',
-    httpOnly: true,
+    httpOnly: true
   };
   res.cookie('refreshToken', refreshToken, cookieOptions);
 
@@ -60,13 +60,13 @@ const refreshToken = catchAsync(async (req: Request, res: Response) => {
   sendResponse<IRefreshTokenResponse>(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'User Logged in successfully !',
-    data: result,
+    message: 'Refresh Token Generated successfully !',
+    data: result
   });
 });
 
 export const AuthController = {
   createNewUser,
   userLogin,
-  refreshToken,
+  refreshToken
 };

@@ -1,58 +1,37 @@
 import { z } from 'zod';
 
-const createStyle = z.object({
-  styleNo: z.string({
-    invalid_type_error: 'Style No must be in String',
-    required_error: 'Style No is Required',
-  }),
-  itemId: z.string({
-    required_error: 'Item ID is Required',
-    invalid_type_error: 'Item id must be in String',
-  }),
-  fabric: z.string({
-    required_error: 'Fabric is Required',
-    invalid_type_error: 'Fabric must be in String',
-  }),
+const createCategory = z.object({
+  body: z.object({
+    categoryName: z.string({
+      required_error: 'categoryName is Required'
+    }),
+    description: z.string({
+      required_error: 'description is Required'
+    })
+  })
 });
 
-const updateStyle = z.object({
+const updateCategory = z.object({
   body: z.object({
-    itemId: z
-      .string({ invalid_type_error: 'Item ID must be in String' })
-      .optional(),
-    image: z
-      .string({ invalid_type_error: 'Image Link must be in String' })
-      .optional(),
-    fabric: z
-      .string({ invalid_type_error: 'Fabric must be in String' })
-      .optional(),
-    isActiveStyle: z
-      .boolean({
-        invalid_type_error: 'Is active Style must be between true or false',
-      })
-      .optional(),
-    factoryId: z
-      .string({
-        invalid_type_error: 'Factory ID must be in String',
-      })
-      .optional(),
-  }),
+    categoryName: z.string().optional(),
+    description: z.string().optional()
+  })
 });
 const factoryStyleAssign = z.object({
   body: z.object({
     factoryId: z.string({
       required_error: 'Factory Id is Required',
-      invalid_type_error: 'Factory ID must be in String',
+      invalid_type_error: 'Factory ID must be in String'
     }),
     styleNo: z.string({
       required_error: 'Style No is Required',
-      invalid_type_error: 'Style No must be in String',
-    }),
-  }),
+      invalid_type_error: 'Style No must be in String'
+    })
+  })
 });
 
-export const StylesValidation = {
-  createStyle,
-  updateStyle,
-  factoryStyleAssign,
+export const CategoryValidation = {
+  createCategory,
+  updateCategory,
+  factoryStyleAssign
 };

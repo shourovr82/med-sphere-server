@@ -39,7 +39,7 @@ router.patch(
 router.patch(
   '/update-my-profile',
   auth(userRole.ADMIN, userRole.SUPER_ADMIN, userRole.USER, userRole.DOCTOR),
-  validateRequest(UserValidation.updateUser),
+  validateRequest(UserValidation.updateMyProfile),
   UserController.updateMyProfileInfo
 );
 // !  get single user ------------------------------>>>

@@ -12,7 +12,7 @@ const createNewService = catchAsync(async (req: Request, res: Response) => {
     statusCode: httpStatus.OK,
     success: true,
     message: 'service created Successfully',
-    data: result,
+    data: result
   });
 });
 
@@ -27,7 +27,7 @@ const getAllServices = catchAsync(async (req: Request, res: Response) => {
     success: true,
     message: 'Services fetched successfully',
     meta: result.meta,
-    data: result.data,
+    data: result.data
   });
 });
 
@@ -39,7 +39,7 @@ const getSingleService = catchAsync(async (req: Request, res: Response) => {
     statusCode: httpStatus.OK,
     success: true,
     message: 'service retrieved successfully',
-    data: result,
+    data: result
   });
 });
 
@@ -51,7 +51,7 @@ const updateService = catchAsync(async (req: Request, res: Response) => {
     statusCode: httpStatus.OK,
     success: true,
     message: 'Service Edited successfully',
-    data: result,
+    data: result
   });
 });
 
@@ -62,7 +62,7 @@ const SingleServiceDelete = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'service deleted successfully',
+    message: 'service deleted successfully'
   });
 });
 
@@ -71,5 +71,5 @@ export const MedServiceController = {
   getAllServices,
   getSingleService,
   SingleServiceDelete,
-  updateService,
+  updateService
 };
